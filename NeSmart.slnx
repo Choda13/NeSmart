@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/docs/">
+    <File Path="AGENTS.md" />
+    <File Path="docs/project-spec.md" />
+    <File Path="docs/style-guide.md" />
+  </Folder>
+  <Project Path="NeSmart-2D/NeSmart-2D.vcxproj" />
+</Solution>

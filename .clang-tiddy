@@ -1,0 +1,12 @@
+Checks: >
+  -*,
+  readability-identifier-naming,
+  bugprone-use-after-move,
+  bugprone-unused-raii,
+  bugprone-dangling-handle,
+  modernize-use-nullptr,
+  modernize-use-override,
+  performance-unnecessary-value-param
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*[/\\]src[/\\](app|rendering|simulation)[/\\].*'

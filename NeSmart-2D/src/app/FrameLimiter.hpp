@@ -1,9 +1,11 @@
 #pragma once
 #include "Timer.hpp"
 
-namespace nesmart::app {
+namespace nesmart::app
+{
 
-    class FrameLimiter {
+    class FrameLimiter
+    {
     public:
         using Clock = Timer::Clock;
 

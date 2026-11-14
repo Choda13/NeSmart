@@ -103,10 +103,7 @@ namespace nesmart::graphics
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     }
 
-    Font::~Font()
-    {
-        glDeleteTextures(1, &m_id);
-    }
+    Font::~Font() { glDeleteTextures(1, &m_id); }
 
     void Font::bind(unsigned int unit) const
     {

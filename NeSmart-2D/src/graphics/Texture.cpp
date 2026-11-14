@@ -35,10 +35,7 @@ namespace nesmart::graphics
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
-    Texture::~Texture()
-    {
-        glDeleteTextures(1, &m_id);
-    }
+    Texture::~Texture() { glDeleteTextures(1, &m_id); }
 
     void Texture::bind(GLuint unit) const
     {

@@ -9,26 +9,29 @@
 
 #pragma comment(lib, "winmm.lib")
 
-namespace nesmart::app {
+namespace nesmart::app
+{
 
-    namespace {
+    namespace
+    {
         // Windows' default timer tick is ~15.6 ms, which would make sleeps overshoot and cap the loop near 64 FPS.
         constexpr UINT TIMER_RESOLUTION_MS = 1;
-    }
+    } // namespace
 
     FrameLimiter::FrameLimiter(double targetFps, double maxDelta)
-        : m_maxDelta(maxDelta), m_lastTick(Clock::now()), m_fpsWindowStart(m_lastTick) {
+        : m_maxDelta(maxDelta), m_lastTick(Clock::now()), m_fpsWindowStart(m_lastTick)
+    {
         timeBeginPeriod(TIMER_RESOLUTION_MS);
         setTargetFps(targetFps);
     }
 
-    FrameLimiter::~FrameLimiter() {
-        timeEndPeriod(TIMER_RESOLUTION_MS);
-    }
+    FrameLimiter::~FrameLimiter() { timeEndPeriod(TIMER_RESOLUTION_MS); }
 
-    double FrameLimiter::tick() {
+    double FrameLimiter::tick()
+    {
         if (m_frameTime > 0.0)
-            waitUntil(m_lastTick + std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(m_frameTime)));
+            waitUntil(m_lastTick +
+                      std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(m_frameTime)));
 
         const auto now = Clock::now();
         m_delta = std::min(std::chrono::duration<double>(now - m_lastTick).count(), m_maxDelta);
@@ -37,7 +40,8 @@ namespace nesmart::app {
         // FPS counter, refreshed twice a second
         ++m_frameCount;
         const double window = std::chrono::duration<double>(now - m_fpsWindowStart).count();
-        if (window >= 0.5) {
+        if (window >= 0.5)
+        {
             m_fps = m_frameCount / window;
             m_frameCount = 0;
             m_fpsWindowStart = now;
@@ -47,7 +51,8 @@ namespace nesmart::app {
 
     // sleep_for/sleep_until are imprecise (often 1-15 ms of overshoot depending on the OS),
     // so sleep for most of the wait and spin for the final stretch.
-    void FrameLimiter::waitUntil(Clock::time_point deadline) {
+    void FrameLimiter::waitUntil(Clock::time_point deadline)
+    {
         constexpr auto spinMargin = std::chrono::milliseconds(2);
         if (deadline - Clock::now() > spinMargin)
             std::this_thread::sleep_until(deadline - spinMargin);

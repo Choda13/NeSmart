@@ -21,7 +21,7 @@ namespace nesmart::graphics
 
         Shader(const Shader&) = delete;
         Shader& operator=(const Shader&) = delete;
-            
+
         void use() const;
 
         void setInt(const std::string& name, int value) const;

@@ -1,9 +1,11 @@
 #pragma once
 #include <chrono>
 
-namespace nesmart::app {
+namespace nesmart::app
+{
 
-    class Timer {
+    class Timer
+    {
     public:
         using Clock = std::chrono::steady_clock;
 

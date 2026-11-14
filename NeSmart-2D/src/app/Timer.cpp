@@ -1,9 +1,11 @@
 #include "Timer.hpp"
 #include <thread>
 
-namespace nesmart::app {
+namespace nesmart::app
+{
 
-    void Timer::sleep(double seconds) {
+    void Timer::sleep(double seconds)
+    {
         if (seconds > 0)
             std::this_thread::sleep_for(std::chrono::duration<double>(seconds));
     }

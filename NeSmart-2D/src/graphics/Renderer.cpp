@@ -93,17 +93,10 @@ namespace nesmart::graphics
     } // namespace
 
     Renderer::Renderer(int screenWidth, int screenHeight, const simulation::Route& route)
-        : m_spriteShader(SPRITE_VERT_PATH, SPRITE_FRAG_PATH)
-        , m_solidShader(SOLID_VERT_PATH, SOLID_FRAG_PATH)
-        , m_textShader(TEXT_VERT_PATH, TEXT_FRAG_PATH)
-        , m_camera(screenWidth, screenHeight)
-        , m_quadMesh(makeUnitQuad())
-        , m_routeMesh(makeRouteMesh(route, ROUTE_WIDTH))
-        , m_backgroundTex(BACKGROUND_PATH)
-        , m_circleTex(CIRCLE_PATH)
-        , m_busTex(BUS_PATH)
-        , m_font(FONT_PATH, FONT_PIXEL_HEIGHT)
-        , m_stationPositions(copyStationPositions(route))
+        : m_spriteShader(SPRITE_VERT_PATH, SPRITE_FRAG_PATH), m_solidShader(SOLID_VERT_PATH, SOLID_FRAG_PATH),
+          m_textShader(TEXT_VERT_PATH, TEXT_FRAG_PATH), m_camera(screenWidth, screenHeight), m_quadMesh(makeUnitQuad()),
+          m_routeMesh(makeRouteMesh(route, ROUTE_WIDTH)), m_backgroundTex(BACKGROUND_PATH), m_circleTex(CIRCLE_PATH),
+          m_busTex(BUS_PATH), m_font(FONT_PATH, FONT_PIXEL_HEIGHT), m_stationPositions(copyStationPositions(route))
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -181,7 +174,7 @@ namespace nesmart::graphics
 
         // The quad runs from (0, 0) to (1, 1), so it is moved by -0.5 first: scale and rotation pivot on its centre.
         const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(bus.position(), 0.0f)) *
-                                glm::rotate(glm::mat4(1.0f), bus.heading(),glm::vec3(0.0f, 0.0f, 1.0f)) *
+                                glm::rotate(glm::mat4(1.0f), bus.heading(), glm::vec3(0.0f, 0.0f, 1.0f)) *
                                 glm::scale(glm::mat4(1.0f), glm::vec3(-BUS_WIDTH, scaleY, 1.0f)) *
                                 glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
         m_spriteShader.setMat4("uModel", model);

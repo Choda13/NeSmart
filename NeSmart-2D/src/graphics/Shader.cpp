@@ -71,7 +71,7 @@ namespace nesmart::graphics
         }
         return location;
     }
-    
+
     void Shader::use() const { glUseProgram(m_ID); }
 
     void Shader::setInt(const std::string& name, int value) const

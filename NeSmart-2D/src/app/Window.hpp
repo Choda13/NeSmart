@@ -2,11 +2,13 @@
 
 struct GLFWwindow;
 
-namespace nesmart::app {
+namespace nesmart::app
+{
 
     // Owns GLFW init/shutdown, the fullscreen window, the GL context and GLEW.
     // Throws std::runtime_error if anything fails to initialize.
-    class Window {
+    class Window
+    {
     public:
         explicit Window(const char* title);
         ~Window();

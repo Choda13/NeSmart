@@ -20,9 +20,9 @@ namespace nesmart::graphics
         {
             glm::vec2 uvOffset; // uv = uvOffset + quadUV * uvSize
             glm::vec2 uvSize;
-            glm::vec2 size;     // bitmap size
-            glm::vec2 bearing;  // x: pen to bitmap left edge; y: baseline to bitmap top edge (up)
-            float advance;      // pen movement to the next glyph
+            glm::vec2 size;    // bitmap size
+            glm::vec2 bearing; // x: pen to bitmap left edge; y: baseline to bitmap top edge (up)
+            float advance;     // pen movement to the next glyph
         };
 
         Font(const std::string& path, unsigned int pixelHeight);

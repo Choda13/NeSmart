@@ -4,11 +4,13 @@
 #include "graphics/Renderer.hpp"
 #include "simulation/Simulation.hpp"
 
-namespace nesmart::app {
+namespace nesmart::app
+{
 
     // Owns the window and the main loop. Will also own the simulation and the
     // renderer, and wire input to the simulation.
-    class Application {
+    class Application
+    {
     public:
         Application();
 

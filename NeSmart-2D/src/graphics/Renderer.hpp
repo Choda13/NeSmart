@@ -36,7 +36,7 @@ namespace nesmart::graphics
         void drawTextCentered(const std::string& text, glm::vec2 center, const glm::vec3& color);
 
         // Declaration order is initialization order; the constructor relies on it.
-        Shader m_spriteShader;      
+        Shader m_spriteShader;
         Shader m_solidShader;
         Shader m_textShader;
 

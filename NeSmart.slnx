@@ -3,8 +3,16 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/configs/">
+    <File Path=".clang-format" />
+    <File Path=".clang-tiddy" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+  </Folder>
   <Folder Name="/docs/">
     <File Path="AGENTS.md" />
+    <File Path="docs/Architecture.md" />
+    <File Path="docs/FreeType.md" />
     <File Path="docs/project-spec.md" />
     <File Path="docs/style-guide.md" />
   </Folder>

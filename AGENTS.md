@@ -7,20 +7,18 @@ NeSmart is a small university assignment: a 2D OpenGL simulation of a bus drivin
 - **No abstract factories, no deep inheritance.** Concrete classes only (`Bus`, `Station`, `Application`, etc.).
 - **No physics engines.** The route is curved, so sample it into a polyline at startup and move the bus at constant speed along it (by distance travelled). No per-frame curve evaluation.
 - **Simple state machine only.** Example: `Driving` / `StoppedAtStation` (10 s timer). Doors are open only while stopped.
-- **No new dependencies.** Allowed: GLFW, GLEW, OpenGL, FreeType, and `stb_image` for textures and the cursor image.
+- **No new dependencies without asking first.** Allowed: GLFW, GLEW, OpenGL, FreeType, and `stb_image` for textures and the cursor image.
 - **No new layers or directory changes** without asking first.
 
 ## 2. Layers
 
-Three layers, one namespace each: `nesmart::app`, `nesmart::rendering`, `nesmart::simulation`.
+Three layers, one namespace each: `nesmart::app`, `nesmart::graphics`, `nesmart::simulation`.
 
 - `simulation`: pure logic with no OpenGL or GLFW includes. Route, stations, bus state machine, passengers, inspector, fines. Advanced with `dt` and plain input calls from the app layer.
-- `rendering`: OpenGL only. Shaders, textures, meshes, text, image loading, and drawing from a read-only view of the simulation state.
+- `graphics`: OpenGL only. Shaders, textures, meshes, text, image loading, and drawing from a read-only view of the simulation state.
 - `app`: window and main loop. `Window` (GLFW/GLEW init, full screen, context), `Application` (main loop, input callbacks, cursor, Escape), `Timer`, `FrameLimiter` (75 FPS). Owns the simulation and the renderer and wires input to the simulation.
 
-Dependency direction: `app` -> `rendering` -> `simulation`. `simulation` includes nothing from the other two layers.
-
-GLFW is included only in `app/*.cpp`. Headers never include GL or GLFW headers; forward-declare instead (`struct GLFWwindow;`). OpenGL calls belong to `rendering`, except `glViewport` in `Window` for now.
+Dependency direction: `app` -> `graphics` -> `simulation`. `simulation` includes nothing from the other two layers.
 
 ## 3. Technical Requirements
 - **OpenGL 3.3 core profile only:** shaders, VAOs, VBOs, uniforms. Never use legacy fixed-pipeline calls (`glBegin`, `glEnd`, `glMatrixMode`, etc.).
@@ -35,14 +33,14 @@ GLFW is included only in `app/*.cpp`. Headers never include GL or GLFW headers; 
 Header and source for a class live side by side in the layer directory.
 
 - Code: `src/<layer>/Name.hpp` and `src/<layer>/Name.cpp`
-- Layers: `app`, `rendering`, `simulation`
+- Layers: `app`, `graphics`, `simulation`
 - Entry point: `src/main.cpp`
 - Assets: `assets/<asset_type>/` (`assets/images`, `assets/shaders`, `assets/fonts`)
 - Docs: `docs/` at the repo root (`Architecture.md`, `StyleGuide.md`)
 - File names are `PascalCase`, matching the class name (`Bus.hpp`, `Bus.cpp`).
-- `src/` is on the include path. Include with the layer prefix: `#include "rendering/Shader.hpp"`. Never use `../` relative includes.
+- `src/` is on the include path. Include with the layer prefix: `#include "graphics/Shader.hpp"`. Never use `../` relative includes.
 - Use `#pragma once` in headers.
-- Layer rule: files in `simulation/` must not include anything prefixed `rendering/` or `app/`; files in `rendering/` must not include `app/`.
+- Layer rule: files in `simulation/` must not include anything prefixed `graphics/` or `app/`; files in `graphics/` must not include `app/`.
 
 ## 5. Naming and Formatting
 Full rules are in `docs/StyleGuide.md`. Summary:

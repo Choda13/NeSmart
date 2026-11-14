@@ -11,6 +11,7 @@
 #include "graphics/Shader.hpp"
 #include "graphics/Texture.hpp"
 #include "simulation/Route.hpp"
+#include "simulation/Simulation.hpp"
 
 namespace nesmart::graphics
 {
@@ -23,12 +24,13 @@ namespace nesmart::graphics
     public:
         Renderer(int screenWidth, int screenHeight, const simulation::Route& route);
 
-        void draw();
+        void draw(const simulation::Simulation& simulation);
 
     private:
         void drawBackground();
         void drawRoute();
         void drawStations();
+        void drawBus(const simulation::Bus& bus);
 
         // Draws the text centred on the given world position, one quad per glyph.
         void drawTextCentered(const std::string& text, glm::vec2 center, const glm::vec3& color);
@@ -37,11 +39,16 @@ namespace nesmart::graphics
         Shader m_spriteShader;      
         Shader m_solidShader;
         Shader m_textShader;
+
         Camera m_camera;
+
         Mesh m_quadMesh;
         Mesh m_routeMesh;
+
         Texture m_backgroundTex;
         Texture m_circleTex;
+        Texture m_busTex;
+
         Font m_font;
         std::array<glm::vec2, simulation::Route::STATION_COUNT> m_stationPositions;
     };

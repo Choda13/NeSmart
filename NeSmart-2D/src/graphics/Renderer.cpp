@@ -36,6 +36,9 @@ namespace nesmart::graphics
         constexpr unsigned int FONT_PIXEL_HEIGHT = 56;
         const glm::vec3 STATION_TEXT_COLOR{1.0f, 1.0f, 1.0f};
 
+        // Bus sprite width in world units. The height follows from the image's aspect ratio.
+        constexpr float BUS_WIDTH = 110.0f;
+
         std::array<glm::vec2, simulation::Route::STATION_COUNT> copyStationPositions(const simulation::Route& route)
         {
             std::array<glm::vec2, simulation::Route::STATION_COUNT> positions{};
@@ -98,6 +101,7 @@ namespace nesmart::graphics
         , m_routeMesh(makeRouteMesh(route, ROUTE_WIDTH))
         , m_backgroundTex(BACKGROUND_PATH)
         , m_circleTex(CIRCLE_PATH)
+        , m_busTex(BUS_PATH)
         , m_font(FONT_PATH, FONT_PIXEL_HEIGHT)
         , m_stationPositions(copyStationPositions(route))
     {
@@ -106,13 +110,14 @@ namespace nesmart::graphics
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    void Renderer::draw()
+    void Renderer::draw(const simulation::Simulation& simulation)
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
         drawBackground();
         drawRoute();
         drawStations();
+        drawBus(simulation.bus());
     }
 
     void Renderer::drawBackground()
@@ -121,7 +126,6 @@ namespace nesmart::graphics
         m_spriteShader.setMat4("uProjection", m_camera.projection());
         m_spriteShader.setInt("uTexture", 0);
 
-        // The unit quad scaled to the whole world covers the background image exactly.
         const glm::mat4 model =
             glm::scale(glm::mat4(1.0f), glm::vec3(simulation::WORLD_WIDTH, simulation::WORLD_HEIGHT, 1.0f));
         m_spriteShader.setMat4("uModel", model);
@@ -134,7 +138,6 @@ namespace nesmart::graphics
     {
         m_solidShader.use();
         m_solidShader.setMat4("uProjection", m_camera.projection());
-        // The route mesh is already in world space, so no model transform is needed.
         m_solidShader.setMat4("uModel", glm::mat4(1.0f));
         m_solidShader.setVec3("uColor", ROUTE_COLOR);
 
@@ -143,7 +146,6 @@ namespace nesmart::graphics
 
     void Renderer::drawStations()
     {
-        // Markers first, then every number on top of them.
         m_spriteShader.use();
         m_spriteShader.setMat4("uProjection", m_camera.projection());
         m_spriteShader.setInt("uTexture", 0);
@@ -165,7 +167,26 @@ namespace nesmart::graphics
         }
     }
 
-    
+    void Renderer::drawBus(const simulation::Bus& bus)
+    {
+        m_spriteShader.use();
+        m_spriteShader.setMat4("uProjection", m_camera.projection());
+        m_spriteShader.setInt("uTexture", 0);
+        m_busTex.bind(0);
+
+        // bus.png faces left, so the x scale is negative to mirror it: heading 0 then means facing right.
+        // Facing left would put the bus upside down, so the y scale flips too and the wheels stay down.
+        const float busHeight = BUS_WIDTH / m_busTex.aspectRatio();
+        const float scaleY = bus.isFacingLeft() ? -busHeight : busHeight;
+
+        // The quad runs from (0, 0) to (1, 1), so it is moved by -0.5 first: scale and rotation pivot on its centre.
+        const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(bus.position(), 0.0f)) *
+                                glm::rotate(glm::mat4(1.0f), bus.heading(),glm::vec3(0.0f, 0.0f, 1.0f)) *
+                                glm::scale(glm::mat4(1.0f), glm::vec3(-BUS_WIDTH, scaleY, 1.0f)) *
+                                glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
+        m_spriteShader.setMat4("uModel", model);
+        m_quadMesh.draw();
+    }
 
     void Renderer::drawTextCentered(const std::string& text, glm::vec2 center, const glm::vec3& color)
     {

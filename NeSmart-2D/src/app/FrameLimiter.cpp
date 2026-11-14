@@ -1,12 +1,29 @@
 #include "FrameLimiter.hpp"
 #include <algorithm>
-#include <thread>   
+#include <thread>
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <timeapi.h>
+
+#pragma comment(lib, "winmm.lib")
 
 namespace nesmart::app {
 
+    namespace {
+        // Windows' default timer tick is ~15.6 ms, which would make sleeps overshoot and cap the loop near 64 FPS.
+        constexpr UINT TIMER_RESOLUTION_MS = 1;
+    }
+
     FrameLimiter::FrameLimiter(double targetFps, double maxDelta)
         : m_maxDelta(maxDelta), m_lastTick(Clock::now()), m_fpsWindowStart(m_lastTick) {
+        timeBeginPeriod(TIMER_RESOLUTION_MS);
         setTargetFps(targetFps);
+    }
+
+    FrameLimiter::~FrameLimiter() {
+        timeEndPeriod(TIMER_RESOLUTION_MS);
     }
 
     double FrameLimiter::tick() {

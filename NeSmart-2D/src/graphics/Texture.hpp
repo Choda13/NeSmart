@@ -22,6 +22,9 @@ namespace nesmart::graphics
         int width() const { return m_width; }
         int height() const { return m_height; }
 
+        // Width divided by height of the original image, for drawing it undistorted at any size.
+        float aspectRatio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
+
     private:
         GLuint m_id = 0;
         int m_width = 0;

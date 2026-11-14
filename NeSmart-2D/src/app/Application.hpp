@@ -2,7 +2,7 @@
 #include "FrameLimiter.hpp"
 #include "Window.hpp"
 #include "graphics/Renderer.hpp"
-#include "simulation/Route.hpp"
+#include "simulation/Simulation.hpp"
 
 namespace nesmart::app {
 
@@ -19,9 +19,8 @@ namespace nesmart::app {
 
         Window m_window;
         FrameLimiter m_limiter;
-        // simulation::Simulation m_simulation;
-        simulation::Route m_route;     // must come before m_renderer: the renderer builds its mesh from it
-        graphics::Renderer m_renderer; // must come after m_window: needs its GL context
+        simulation::Simulation m_simulation; // must come before m_renderer: the renderer builds its mesh from the route
+        graphics::Renderer m_renderer;       // must come after m_window: needs its GL context
     };
 
 } // namespace nesmart::app

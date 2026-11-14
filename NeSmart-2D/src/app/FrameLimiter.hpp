@@ -9,6 +9,10 @@ namespace nesmart::app {
 
         // targetFps <= 0 means unlimited
         explicit FrameLimiter(double targetFps = 60.0, double maxDelta = 0.25);
+        ~FrameLimiter(); // restores the system timer resolution
+
+        FrameLimiter(const FrameLimiter&) = delete;
+        FrameLimiter& operator=(const FrameLimiter&) = delete;
 
         void setTargetFps(double fps) { m_frameTime = fps > 0.0 ? 1.0 / fps : 0.0; }
 

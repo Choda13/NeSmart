@@ -5,7 +5,7 @@
 namespace nesmart::app {
 
     Application::Application()
-        : m_window("NeSmart"), m_limiter(75.0), m_renderer(m_window.width(), m_window.height()) {
+        : m_window("NeSmart"), m_limiter(75.0), m_renderer(m_window.width(), m_window.height(), m_route) {
         glfwSetWindowUserPointer(m_window.handle(), this);
         glfwSetKeyCallback(m_window.handle(), onKey);
     }

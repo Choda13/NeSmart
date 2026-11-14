@@ -1,6 +1,12 @@
 #pragma once
 
+#include <array>
+#include <string>
+
+#include <glm/glm.hpp>
+
 #include "graphics/Camera.hpp"
+#include "graphics/Font.hpp"
 #include "graphics/Mesh.hpp"
 #include "graphics/Shader.hpp"
 #include "graphics/Texture.hpp"
@@ -22,14 +28,22 @@ namespace nesmart::graphics
     private:
         void drawBackground();
         void drawRoute();
+        void drawStations();
+
+        // Draws the text centred on the given world position, one quad per glyph.
+        void drawTextCentered(const std::string& text, glm::vec2 center, const glm::vec3& color);
 
         // Declaration order is initialization order; the constructor relies on it.
-        Shader m_spriteShader;      // textured sprites
-        Shader m_solidShader; // flat-coloured shapes
+        Shader m_spriteShader;      
+        Shader m_solidShader;
+        Shader m_textShader;
         Camera m_camera;
-        Mesh m_quad;
+        Mesh m_quadMesh;
         Mesh m_routeMesh;
-        Texture m_background;
+        Texture m_backgroundTex;
+        Texture m_circleTex;
+        Font m_font;
+        std::array<glm::vec2, simulation::Route::STATION_COUNT> m_stationPositions;
     };
 
 } // namespace nesmart::graphics

@@ -1,6 +1,7 @@
 #pragma once
 #include "FrameLimiter.hpp"
 #include "Window.hpp"
+#include "graphics/Renderer.hpp"
 
 namespace nesmart::app {
 
@@ -18,7 +19,7 @@ namespace nesmart::app {
         Window m_window;
         FrameLimiter m_limiter;
         // simulation::Simulation m_simulation;
-        // rendering::Renderer m_renderer;
+        graphics::Renderer m_renderer; // must come after m_window: needs its GL context
     };
 
 } // namespace nesmart::app

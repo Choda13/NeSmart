@@ -7,8 +7,8 @@
 namespace nesmart::app
 {
 
-    // Owns the window and the main loop. Will also own the simulation and the
-    // renderer, and wire input to the simulation.
+    // Owns the window, the frame limiter, the simulation and the renderer, and runs the main loop.
+    // Will also wire input to the simulation.
     class Application
     {
     public:

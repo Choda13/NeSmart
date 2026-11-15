@@ -173,7 +173,11 @@
     <ClCompile Include="src\graphics\Font.cpp" />
     <ClCompile Include="src\graphics\Mesh.cpp" />
     <ClCompile Include="src\graphics\Renderer.cpp" />
+    <ClCompile Include="src\graphics\ResourceManager.cpp" />
     <ClCompile Include="src\graphics\Shader.cpp" />
+    <ClCompile Include="src\graphics\Sprite.cpp" />
+    <ClCompile Include="src\graphics\SpriteRenderer.cpp" />
+    <ClCompile Include="src\graphics\TextRenderer.cpp" />
     <ClCompile Include="src\graphics\Texture.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\simulation\Bus.cpp" />
@@ -253,7 +257,11 @@
     <ClInclude Include="src\graphics\Font.hpp" />
     <ClInclude Include="src\graphics\Mesh.hpp" />
     <ClInclude Include="src\graphics\Renderer.hpp" />
+    <ClInclude Include="src\graphics\ResourceManager.hpp" />
     <ClInclude Include="src\graphics\Shader.hpp" />
+    <ClInclude Include="src\graphics\Sprite.hpp" />
+    <ClInclude Include="src\graphics\SpriteRenderer.hpp" />
+    <ClInclude Include="src\graphics\TextRenderer.hpp" />
     <ClInclude Include="src\graphics\Texture.hpp" />
     <ClInclude Include="src\simulation\Bus.hpp" />
     <ClInclude Include="src\simulation\Route.hpp" />
@@ -264,6 +272,8 @@
     <Image Include="assets\images\background.png" />
     <Image Include="assets\images\bus.png" />
     <Image Include="assets\images\circle.png" />
+    <Image Include="assets\images\doors_closed.png" />
+    <Image Include="assets\images\doors_opened.png" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="assets\fonts\roboto\Roboto-Regular.ttf" />

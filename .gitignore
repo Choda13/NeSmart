@@ -365,3 +365,6 @@ FodyWeavers.xsd
 !NeSmart-2D/external/freetype/lib/**/*.lib
 # Prebuilt FreeType libs live under x64/Debug and x64/Release, which the rules above would ignore
 !NeSmart-2D/external/freetype/lib/**
+/.workspace/specs
+/docs/.$Architecture-current.drawio.bkp
+/docs/Architecture-current.drawio

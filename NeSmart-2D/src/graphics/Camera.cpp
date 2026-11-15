@@ -23,6 +23,9 @@ namespace nesmart::graphics
         // Bottom is larger than top on purpose: world y points down, the origin is the top-left corner.
         m_projection = glm::ortho(simulation::SAFE_CENTER_X - halfWidth, simulation::SAFE_CENTER_X + halfWidth,
                                   simulation::SAFE_CENTER_Y + halfHeight, simulation::SAFE_CENTER_Y - halfHeight);
+
+        // Same flipped y as above: (0, 0) is the top-left pixel of the screen.
+        m_screenProjection = glm::ortho(0.0f, width, height, 0.0f);
     }
 
 } // namespace nesmart::graphics

@@ -1,10 +1,11 @@
 # Architecture
 
 How the code is organized and how a frame gets from the simulation to the screen. This document covers what exists
-today: the window, the main loop, the coordinate system and the background image. Route, stations, bus and HUD will
-plug into the same structure (see [Extending](#extending)).
+today: the window, the main loop, the coordinate system, the route, stations and bus, and the text drawing. Passengers,
+the inspector and the HUD will plug into the same structure (see [Extending](#8-extending)).
 
 Rules and limits live in `AGENTS.md`; naming and formatting live in `style-guide.md`. This file explains the design.
+`Architecture-current.drawio` is a diagram of the structure below.
 
 ## 1. Layers
 
@@ -17,7 +18,7 @@ app  ──►  graphics  ──►  simulation
 | Layer | Namespace | Responsibility |
 |---|---|---|
 | `simulation` | `nesmart::simulation` | Pure game logic and the world's coordinate constants. No OpenGL, no GLFW. |
-| `graphics` | `nesmart::graphics` | Everything OpenGL: shaders, textures, meshes, camera, drawing. |
+| `graphics` | `nesmart::graphics` | Everything OpenGL: shaders, textures, meshes, fonts, camera, drawing. |
 | `app` | `nesmart::app` | Window, main loop, frame limiter. Owns the other layers and wires them together. |
 
 `simulation` never includes `graphics/` or `app/`; `graphics` never includes `app/`.
@@ -27,17 +28,22 @@ app  ──►  graphics  ──►  simulation
 | Class | Layer | Purpose |
 |---|---|---|
 | `World.hpp` (constants) | simulation | The coordinate contract: world size, safe area size, safe area center. No behaviour. |
+| `Route` | simulation | The closed route sampled into a polyline at startup, with cumulative distances, station positions and `positionAt` / `headingAt` by distance. |
+| `Bus` | simulation | Distance travelled along the route at constant speed, plus the cached position, heading and facing. |
+| `Simulation` | simulation | Owns the `Route` and the `Bus`; `update(dt)` advances them. |
 | `Shader` | graphics | Compiles and links a vertex and fragment shader; sets uniforms by name. |
 | `Texture` | graphics | An image on the GPU. Loads a file with `stb_image`, always RGBA, flipped on load. |
 | `Mesh` | graphics | A shape on the GPU: one VAO and one VBO, uploaded once. Knows its own primitive mode. |
+| `Font` | graphics | A glyph atlas built with FreeType: one GL texture plus per-glyph metrics and `width(text)`. |
 | `Camera` | graphics | Computes the world-to-screen projection matrix from the screen size. Pure math. |
-| `Renderer` | graphics | The only class that draws. Owns the shader, camera, meshes and textures and decides the draw order. |
+| `Renderer` | graphics | The only class that draws. Owns all shaders, textures, meshes, the font and the camera, and decides the draw order. |
 | `Window` | app | Full-screen GLFW window, GL context, GLEW. Exposes its pixel size. |
+| `Timer` | app | Small clock helpers used by `FrameLimiter`. |
 | `FrameLimiter` | app | Holds the loop to 75 FPS and provides `dt`. |
-| `Application` | app | Main loop and input callbacks. Owns `Window`, `FrameLimiter` and `Renderer`. |
+| `Application` | app | Main loop and input callbacks. Owns `Window`, `FrameLimiter`, `Simulation` and `Renderer`. |
 
-GL resources (`Shader`, `Texture`, `Mesh`) are RAII: they release their GL objects in the destructor and cannot be
-copied. `Camera` and `World.hpp` make no GL calls.
+GL resources (`Shader`, `Texture`, `Mesh`, `Font`) are RAII: they release their GL objects in the destructor and cannot
+be copied. `Camera`, `World.hpp` and everything in `simulation` make no GL calls.
 
 ## 3. Ownership and startup
 
@@ -46,17 +52,21 @@ main()
  └─ Application
      ├─ Window            creates the window, GL context, GLEW
      ├─ FrameLimiter
+     ├─ Simulation        declared before Renderer: the renderer builds the route mesh from its Route
+     │   ├─ Route
+     │   └─ Bus
      └─ Renderer          needs the GL context, so it is declared after Window
-         ├─ Shader        assets/shaders/sprite.vert, sprite.frag
+         ├─ Shader x3     sprite, solid, text (assets/shaders)
          ├─ Camera        projection from screen size + World.hpp
-         ├─ Mesh          unit quad
-         └─ Texture       assets/images/background.png
+         ├─ Mesh x2       unit quad, route ribbon
+         ├─ Texture x3    background, circle, bus (assets/images)
+         └─ Font          Roboto Regular (assets/fonts)
 ```
 
 - Members are constructed in declaration order and destroyed in reverse. Because `m_window` is declared before
   `m_renderer`, the GL context exists while the renderer's GL objects are created and still exists while they are
   destroyed. No manual cleanup is needed.
-- Any constructor that cannot finish (missing shader file, compile error, missing image) throws
+- Any constructor that cannot finish (missing shader file, compile error, missing image or font) throws
   `std::runtime_error`. It propagates to `main`, which prints the message and returns -1.
 
 ## 4. A frame
@@ -66,20 +76,23 @@ main()
 ```
 while (!window.shouldClose())
     dt = limiter.delta()
-    renderer.draw()
+    simulation.update(dt)
+    renderer.draw(simulation)
     window.swapBuffers()
     window.pollEvents()      // key callback: Escape closes the window
     limiter.tick()           // sleeps to hold 75 FPS (VSync is off)
 ```
 
-`Renderer::draw()`:
+`Renderer::draw(const Simulation&)`, in this order:
 
 1. Clear the screen.
-2. `shader.use()`, then set `uProjection` (from `Camera`) and `uTexture` (texture unit 0).
-3. `drawBackground()`: set `uModel` to a scale of the world size, bind the background texture, draw the unit quad.
+2. `drawBackground()`: sprite shader, unit quad scaled to the world size.
+3. `drawRoute()`: solid shader, the route ribbon mesh.
+4. `drawStations()`: a circle sprite per station, then its number as text.
+5. `drawBus(bus)`: sprite shader, positioned, rotated and mirrored from the bus state.
 
-On the GPU the vertex shader computes `uProjection * uModel * vec4(aPos, 0, 1)`. The fragment shader samples the
-texture and keeps its alpha; blending is enabled so transparent areas of later sprites work.
+Each draw function selects its shader, sets `uProjection`, binds its texture and builds its own `uModel`. Blending is
+enabled once in the constructor so transparent areas of sprites and glyph edges work.
 
 ## 5. Coordinate system
 
@@ -98,7 +111,7 @@ All game objects are positioned in **world space**, defined in `simulation/World
 | Clip / NDC | what the GPU consumes | -1..1 |
 
 `uModel` takes mesh space to world space (position, size, rotation of one sprite). `uProjection` takes world space to
-clip space.
+clip space. The route ribbon is built directly in world space, so its `uModel` is the identity.
 
 ### Camera
 
@@ -143,31 +156,39 @@ convention). Because world y points down, the unit quad's UVs are flipped to mat
 The quad is drawn as a `GL_TRIANGLE_STRIP`, so its vertices are in that order. If an image ever appears upside down,
 check this table first.
 
-## 6. Shaders
+## 6. Route and bus
 
-`assets/shaders/sprite.vert` and `sprite.frag` draw any textured quad.
+- `Route` samples its curve into a polyline once at startup and stores the cumulative distance at each point. Looking
+  up a position or heading by distance is a search in that table, so no curve is evaluated per frame. It also places
+  `STATION_COUNT` stations along the route and stores each one's position and distance.
+- `Bus` only stores how far it has travelled (`m_distance`). `update(dt, route)` adds `SPEED * dt`, wraps at the route's
+  total length with `fmod`, and caches the position, heading and facing for that distance.
+- The heading is only updated when it differs from the shown one by more than `ROTATION_THRESHOLD`, so the sprite does
+  not jitter along small bends.
+- There is no state machine yet: the bus never stops at stations.
 
-| Item | Kind | Meaning |
-|---|---|---|
-| `aPos` (location 0) | vertex input, vec2 | position in mesh space |
-| `aUV` (location 1) | vertex input, vec2 | texture coordinate |
-| `uProjection` | uniform, mat4 | world to clip space (`Camera`) |
-| `uModel` | uniform, mat4 | mesh space to world space (this sprite) |
-| `uTexture` | uniform, sampler2D | texture unit the image is bound to |
+## 7. Shaders and text
 
-These match `Mesh` built with the attribute layout `{2, 2}`.
+Three shader pairs in `assets/shaders/`, all taking `uProjection` and `uModel` and all using a mesh in the unit quad's
+layout or the ribbon's layout:
 
-## 7. Assets and the working directory
+| Shader | Mesh layout | Other uniforms | Used for |
+|---|---|---|---|
+| `sprite` | `{2, 2}`: `aPos`, `aUV` | `uTexture` | background, station circles, bus |
+| `solid` | `{2}`: `aPos` | `uColor` | the route ribbon |
+| `text` | `{2, 2}`: `aPos`, `aUV` | `uTexture`, `uColor`, `uUVOffset`, `uUVSize` | station numbers |
 
-Asset paths in code are relative (`assets/shaders/...`, `assets/images/...`), so the process's working directory must be
-the project folder. In Visual Studio set Project Properties, Debugging, Working Directory to `$(ProjectDir)`.
+Text: `Font` renders its glyphs once into a single-channel atlas texture. `Renderer::drawTextCentered` draws one quad per
+glyph with the unit quad mesh, picking the glyph's part of the atlas with `uUVOffset` / `uUVSize`. The fragment shader
+uses the atlas value as alpha. Glyph sizes are in pixels and placed in world units, so one font pixel is one world
+unit.
 
 ## 8. Extending
 
-- **A new sprite (bus, icon):** load a `Texture`, then in `Renderer` build a `uModel` (translate, optionally rotate,
-  then scale) and draw the same unit-quad `Mesh`. No new mesh or shader is needed.
-- **A new shape (station circle, route line):** build a vertex array, create a `Mesh` with the right primitive mode
-  (`GL_TRIANGLE_FAN`, `GL_LINE_LOOP`, ...), and draw it from `Renderer`.
+- **A new sprite (passenger, inspector, icon):** load a `Texture`, then in `Renderer` build a `uModel` (translate,
+  optionally rotate, then scale) and draw the same unit-quad `Mesh`. No new mesh or shader is needed.
+- **A new shape:** build a vertex array, create a `Mesh` with the right primitive mode (`GL_TRIANGLE_FAN`,
+  `GL_LINE_LOOP`, ...), and draw it from `Renderer`.
 - **Simulation state:** `Bus`, `Route` and the rest live in `simulation` and hold only game state (distance, state,
   timer, counts). They never hold GL objects. `Application` owns a `Simulation`, calls `simulation.update(dt)` each
   frame, and passes a `const` view of it to `Renderer::draw`, which reads positions and builds each model matrix.
@@ -176,7 +197,11 @@ the project folder. In Visual Studio set Project Properties, Debugging, Working 
 
 ## 9. Build notes
 
-- `src/`, `external/glm` and `external/stb` must be on the include path. `stb_image.h` is included as
-  `<stb_image.h>`, and `STB_IMAGE_IMPLEMENTATION` is defined only in `Texture.cpp`.
+- `src/`, `external/glm`, `external/stb` and the FreeType headers must be on the include path, and `freetype.lib` must
+  be linked. `stb_image.h` is included as `<stb_image.h>`, and `STB_IMAGE_IMPLEMENTATION` is defined only in
+  `Texture.cpp`.
 - Include `GL/glew.h` before `GLFW/glfw3.h`. In `.cpp` files, put the file's own header first; it pulls in GLEW before
   any GLFW include.
+- Asset paths in code are relative (`assets/shaders/...`, `assets/images/...`, `assets/fonts/...`), so the process's
+  working directory must be the project folder. In Visual Studio set Project Properties, Debugging, Working Directory
+  to `$(ProjectDir)`.

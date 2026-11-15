@@ -19,6 +19,10 @@ namespace nesmart::graphics
         Mesh(const std::vector<float>& vertices, const std::vector<int>& attributeSizes, GLenum mode);
         ~Mesh();
 
+        // Square from (0, 0) to (1, 1) in y-down space with texture coordinates (layout {2, 2}), drawn as a
+        // triangle strip. Scale and move it with a model matrix to draw sprites and glyphs.
+        static Mesh unitQuad();
+
         Mesh(const Mesh&) = delete;
         Mesh& operator=(const Mesh&) = delete;
 

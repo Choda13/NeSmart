@@ -5,6 +5,7 @@
 namespace nesmart::simulation
 {
     Bus::Bus(const Route& route)
+        : m_distance(route.stationDistance(0))
     {
         cachePose(route);
         m_heading = route.headingAt(m_distance); // no threshold on the first frame
@@ -13,8 +14,40 @@ namespace nesmart::simulation
 
     void Bus::update(float dt, const Route& route)
     {
-        // fmod keeps the overshoot past the end of the loop, so the speed stays constant across the seam.
-        m_distance = std::fmod(m_distance + SPEED * dt, route.totalLength());
+        if (m_state == State::StoppedAtStation)
+        {
+            m_stopTimer -= dt;
+            if (m_stopTimer <= 0.0f)
+            {
+                m_state = State::Driving; // starts moving next frame
+                m_nextStation = (m_nextStation + 1) % Route::STATION_COUNT;
+            }
+            return;
+        }
+
+        const float length = route.totalLength();
+        const float step = SPEED * dt;
+        const float target = route.stationDistance(m_nextStation);
+
+        // Distance from here to the next station, going forward around the loop.
+        float ahead = target - m_distance;
+        if (ahead <= 0.0f)
+        {
+            ahead += length;
+        }
+
+        if (ahead <= step)
+        {
+            // Arrived: snap onto the station and wait.
+            m_distance = target;
+            m_state = State::StoppedAtStation;
+            m_stopTimer = STOP_DURATION;
+        }
+        else
+        {
+            // fmod keeps the overshoot past the end of the loop, so the speed stays constant across the seam.
+            m_distance = std::fmod(m_distance + step, length);
+        }
         cachePose(route);
     }
 

@@ -16,8 +16,13 @@ namespace nesmart::graphics
 
         const glm::mat4& projection() const { return m_projection; }
 
+        // Screen space for HUD: units are screen pixels, origin at the top-left corner, y down.
+        // Independent of the world and the safe area.
+        const glm::mat4& screenProjection() const { return m_screenProjection; }
+
     private:
         glm::mat4 m_projection{1.0f};
+        glm::mat4 m_screenProjection{1.0f};
     };
 
 } // namespace nesmart::graphics

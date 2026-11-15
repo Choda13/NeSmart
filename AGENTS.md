@@ -48,7 +48,7 @@ Full rules are in `docs/StyleGuide.md`. Summary:
 - Functions and local variables: `camelCase`
 - Member variables: `m_camelCase`; statics: `s_camelCase`
 - Constants: `UPPER_SNAKE_CASE` (`constexpr`, no macros)
-- Namespaces: `snake_case` per layer: `nesmart::app`, `nesmart::rendering`, `nesmart::simulation`
+- Namespaces: `snake_case` per layer: `nesmart::app`, `nesmart::graphics`, `nesmart::simulation`
 - Accessors have no `get` prefix (`delta()`); booleans read as questions (`isAlive()`)
 - Allman braces, always braces, 4 spaces, 120 columns. `.clang-format` in the repo root is the authority.
 - `.cpp` include order: own header, C std, C++ std, third-party (`GL/glew.h` before `GLFW/glfw3.h`), project headers.

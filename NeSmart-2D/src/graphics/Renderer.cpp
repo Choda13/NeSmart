@@ -1,12 +1,10 @@
 #include "graphics/Renderer.hpp"
 
-#include <array>
 #include <string>
 #include <vector>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "simulation/World.hpp"
 
@@ -26,41 +24,44 @@ namespace nesmart::graphics
         constexpr const char* BACKGROUND_PATH = "assets/images/background.png";
         constexpr const char* CIRCLE_PATH = "assets/images/circle.png";
         constexpr const char* BUS_PATH = "assets/images/bus.png";
+        constexpr const char* DOORS_CLOSED_PATH = "assets/images/doors_closed.png";
+        constexpr const char* DOORS_OPENED_PATH = "assets/images/doors_opened.png";
 
-        // Thickness of the drawn route line, in world units.
+        constexpr const char* FONT_NAME = "roboto";
+        constexpr const char* SPRITE_SHADER_NAME = "sprite";
+        constexpr const char* SOLID_SHADER_NAME = "solid";
+        constexpr const char* TEXT_SHADER_NAME = "text";
+        constexpr const char* BACKGROUND_NAME = "background";
+        constexpr const char* CIRCLE_NAME = "circle";
+        constexpr const char* BUS_NAME = "bus";
+        constexpr const char* DOORS_CLOSED_NAME = "doors_closed";
+        constexpr const char* DOORS_OPENED_NAME = "doors_opened";
+
         constexpr float ROUTE_WIDTH = 15.0f;
         const glm::vec3 ROUTE_COLOR{0.878f, 0.192f, 0.192f};
 
-        // Station marker size in world units, and the font's pixel height (also world units, see drawTextCentered).
         constexpr float STATION_DIAMETER = 100.0f;
         constexpr unsigned int FONT_PIXEL_HEIGHT = 56;
         const glm::vec3 STATION_TEXT_COLOR{1.0f, 1.0f, 1.0f};
 
-        // Bus sprite width in world units. The height follows from the image's aspect ratio.
         constexpr float BUS_WIDTH = 110.0f;
 
-        std::array<glm::vec2, simulation::Route::STATION_COUNT> copyStationPositions(const simulation::Route& route)
-        {
-            std::array<glm::vec2, simulation::Route::STATION_COUNT> positions{};
-            for (std::size_t i = 0; i < positions.size(); ++i)
-            {
-                positions[i] = route.stationPosition(i);
-            }
-            return positions;
-        }
+        constexpr float HUD_MARGIN = 16.0f;       // screen pixels
+        constexpr float HUD_DOORS_WIDTH = 128.0f; // screen pixels
 
-        // Square from (0, 0) to (1, 1) in y-down space, drawn as a triangle strip.
-        // STs are flipped vertically because Texture flips images on load (ST (0, 0) is the image's bottom-left).
-        Mesh makeUnitQuad()
+        ResourceManager makeResources()
         {
-            const std::vector<float> vertices = {
-                //  x     y     s     t
-                0.0f, 0.0f, 0.0f, 1.0f, // top-left
-                1.0f, 0.0f, 1.0f, 1.0f, // top-right
-                0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
-                1.0f, 1.0f, 1.0f, 0.0f, // bottom-right
-            };
-            return Mesh(vertices, {2, 2}, GL_TRIANGLE_STRIP);
+            ResourceManager resources;
+            resources.loadShader(SPRITE_SHADER_NAME, SPRITE_VERT_PATH, SPRITE_FRAG_PATH);
+            resources.loadShader(SOLID_SHADER_NAME, SOLID_VERT_PATH, SOLID_FRAG_PATH);
+            resources.loadShader(TEXT_SHADER_NAME, TEXT_VERT_PATH, TEXT_FRAG_PATH);
+            resources.loadTexture(BACKGROUND_NAME, BACKGROUND_PATH);
+            resources.loadTexture(CIRCLE_NAME, CIRCLE_PATH);
+            resources.loadTexture(BUS_NAME, BUS_PATH);
+            resources.loadTexture(DOORS_CLOSED_NAME, DOORS_CLOSED_PATH);
+            resources.loadTexture(DOORS_OPENED_NAME, DOORS_OPENED_PATH);
+            resources.loadFont(FONT_NAME, FONT_PATH, FONT_PIXEL_HEIGHT);
+            return resources;
         }
 
         // Turns the route's centre line into a ribbon of the given width, built in world space.
@@ -93,38 +94,86 @@ namespace nesmart::graphics
     } // namespace
 
     Renderer::Renderer(int screenWidth, int screenHeight, const simulation::Route& route)
-        : m_spriteShader(SPRITE_VERT_PATH, SPRITE_FRAG_PATH), m_solidShader(SOLID_VERT_PATH, SOLID_FRAG_PATH),
-          m_textShader(TEXT_VERT_PATH, TEXT_FRAG_PATH), m_camera(screenWidth, screenHeight), m_quadMesh(makeUnitQuad()),
-          m_routeMesh(makeRouteMesh(route, ROUTE_WIDTH)), m_backgroundTex(BACKGROUND_PATH), m_circleTex(CIRCLE_PATH),
-          m_busTex(BUS_PATH), m_font(FONT_PATH, FONT_PIXEL_HEIGHT), m_stationPositions(copyStationPositions(route))
+        : m_resources(makeResources()), m_camera(screenWidth, screenHeight),
+          m_spritesRenderer(m_resources.shader(SPRITE_SHADER_NAME)),
+          m_textRenderer(m_resources.shader(TEXT_SHADER_NAME), m_resources.font(FONT_NAME)),
+          m_solidShader(m_resources.shader(SOLID_SHADER_NAME)), m_routeMesh(makeRouteMesh(route, ROUTE_WIDTH))
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+        m_background.texture = &m_resources.texture(BACKGROUND_NAME);
+        m_background.size = {simulation::WORLD_WIDTH, simulation::WORLD_HEIGHT};
+
+        // The origin is the sprite's centre, so the circle is centred on the station.
+        const Texture& circle = m_resources.texture(CIRCLE_NAME);
+        for (std::size_t i = 0; i < m_stations.size(); ++i)
+        {
+            m_stations[i].texture = &circle;
+            m_stations[i].position = route.stationPosition(i);
+            m_stations[i].size = {STATION_DIAMETER, STATION_DIAMETER};
+            m_stations[i].origin = {0.5f, 0.5f};
+        }
+
+        // Position, rotation and flips are set every frame in draw(). The origin is the centre, so the bus pivots there.
+        const Texture& bus = m_resources.texture(BUS_NAME);
+        m_bus.texture = &bus;
+        m_bus.size = {BUS_WIDTH, BUS_WIDTH / bus.aspectRatio()};
+        m_bus.origin = {0.5f, 0.5f};
+
+        // Both HUD sprites share the top-left corner; draw() picks one by the bus state.
+        const Texture& doorsClosed = m_resources.texture(DOORS_CLOSED_NAME);
+        m_doorsClosed.texture = &doorsClosed;
+        m_doorsClosed.position = {HUD_MARGIN, HUD_MARGIN};
+        m_doorsClosed.size = {HUD_DOORS_WIDTH, HUD_DOORS_WIDTH / doorsClosed.aspectRatio()};
+
+        const Texture& doorsOpened = m_resources.texture(DOORS_OPENED_NAME);
+        m_doorsOpened.texture = &doorsOpened;
+        m_doorsOpened.position = {HUD_MARGIN, HUD_MARGIN};
+        m_doorsOpened.size = {HUD_DOORS_WIDTH, HUD_DOORS_WIDTH / doorsOpened.aspectRatio()};
     }
 
     void Renderer::draw(const simulation::Simulation& simulation)
     {
+        const glm::mat4& projection = m_camera.projection();
+    
         glClear(GL_COLOR_BUFFER_BIT);
+        m_spritesRenderer.begin(projection);
+        m_spritesRenderer.draw(m_background);
 
-        drawBackground();
         drawRoute();
-        drawStations();
-        drawBus(simulation.bus());
-    }
 
-    void Renderer::drawBackground()
-    {
-        m_spriteShader.use();
-        m_spriteShader.setMat4("uProjection", m_camera.projection());
-        m_spriteShader.setInt("uTexture", 0);
+        m_spritesRenderer.begin(projection);
+        for (const Sprite& station : m_stations)
+        {
+            m_spritesRenderer.draw(station);
+        }
 
-        const glm::mat4 model =
-            glm::scale(glm::mat4(1.0f), glm::vec3(simulation::WORLD_WIDTH, simulation::WORLD_HEIGHT, 1.0f));
-        m_spriteShader.setMat4("uModel", model);
+        m_textRenderer.begin(projection);
+        for (std::size_t i = 0; i < m_stations.size(); ++i)
+        {
+            m_textRenderer.drawCentered(std::to_string(i), m_stations[i].position, STATION_TEXT_COLOR);
+        }
 
-        m_backgroundTex.bind(0);
-        m_quadMesh.draw();
+        const simulation::Bus& bus = simulation.bus();
+        m_bus.position = bus.position();
+        m_bus.rotation = bus.heading();
+        m_bus.flipX = true;
+        m_bus.flipY = bus.isFacingLeft();
+
+        m_spritesRenderer.begin(projection);
+        m_spritesRenderer.draw(m_bus);
+
+        m_spritesRenderer.begin(m_camera.screenProjection());
+        if (bus.isMoving())
+        {
+            m_spritesRenderer.draw(m_doorsClosed);
+        }
+        else
+        {
+            m_spritesRenderer.draw(m_doorsOpened);
+        }
     }
 
     void Renderer::drawRoute()
@@ -135,80 +184,6 @@ namespace nesmart::graphics
         m_solidShader.setVec3("uColor", ROUTE_COLOR);
 
         m_routeMesh.draw();
-    }
-
-    void Renderer::drawStations()
-    {
-        m_spriteShader.use();
-        m_spriteShader.setMat4("uProjection", m_camera.projection());
-        m_spriteShader.setInt("uTexture", 0);
-        m_circleTex.bind(0);
-
-        for (const glm::vec2& position : m_stationPositions)
-        {
-            // The unit quad's origin is its top-left corner, so shift by half the size to centre it on the station.
-            const glm::mat4 model =
-                glm::translate(glm::mat4(1.0f), glm::vec3(position - glm::vec2(STATION_DIAMETER * 0.5f), 0.0f)) *
-                glm::scale(glm::mat4(1.0f), glm::vec3(STATION_DIAMETER, STATION_DIAMETER, 1.0f));
-            m_spriteShader.setMat4("uModel", model);
-            m_quadMesh.draw();
-        }
-
-        for (std::size_t i = 0; i < m_stationPositions.size(); ++i)
-        {
-            drawTextCentered(std::to_string(i), m_stationPositions[i], STATION_TEXT_COLOR);
-        }
-    }
-
-    void Renderer::drawBus(const simulation::Bus& bus)
-    {
-        m_spriteShader.use();
-        m_spriteShader.setMat4("uProjection", m_camera.projection());
-        m_spriteShader.setInt("uTexture", 0);
-        m_busTex.bind(0);
-
-        // bus.png faces left, so the x scale is negative to mirror it: heading 0 then means facing right.
-        // Facing left would put the bus upside down, so the y scale flips too and the wheels stay down.
-        const float busHeight = BUS_WIDTH / m_busTex.aspectRatio();
-        const float scaleY = bus.isFacingLeft() ? -busHeight : busHeight;
-
-        // The quad runs from (0, 0) to (1, 1), so it is moved by -0.5 first: scale and rotation pivot on its centre.
-        const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(bus.position(), 0.0f)) *
-                                glm::rotate(glm::mat4(1.0f), bus.heading(), glm::vec3(0.0f, 0.0f, 1.0f)) *
-                                glm::scale(glm::mat4(1.0f), glm::vec3(-BUS_WIDTH, scaleY, 1.0f)) *
-                                glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
-        m_spriteShader.setMat4("uModel", model);
-        m_quadMesh.draw();
-    }
-
-    void Renderer::drawTextCentered(const std::string& text, glm::vec2 center, const glm::vec3& color)
-    {
-        m_textShader.use();
-        m_textShader.setMat4("uProjection", m_camera.projection());
-        m_textShader.setInt("uTexture", 0);
-        m_textShader.setVec3("uColor", color);
-        m_font.bind(0);
-
-        // Glyph sizes are in pixels but placed in world units, so one font pixel is one world unit.
-        // Vertical centring uses the digit height, which suits numbers (the world is y-down, so the baseline is lower).
-        const float baseline = center.y + m_font.glyph('0').bearing.y * 0.5f;
-        float penX = center.x - m_font.width(text) * 0.5f;
-
-        for (const char c : text)
-        {
-            const Font::Glyph& glyph = m_font.glyph(c);
-
-            const glm::vec2 topLeft{penX + glyph.bearing.x, baseline - glyph.bearing.y};
-            const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(topLeft, 0.0f)) *
-                                    glm::scale(glm::mat4(1.0f), glm::vec3(glyph.size, 1.0f));
-
-            m_textShader.setMat4("uModel", model);
-            m_textShader.setVec2("uUVOffset", glyph.uvOffset);
-            m_textShader.setVec2("uUVSize", glyph.uvSize);
-            m_quadMesh.draw();
-
-            penX += glyph.advance;
-        }
     }
 
 } // namespace nesmart::graphics

@@ -45,6 +45,19 @@ namespace nesmart::graphics
         glDeleteVertexArrays(1, &m_vao);
     }
 
+    Mesh Mesh::unitQuad()
+    {
+        // STs are flipped vertically because Texture flips images on load (ST (0, 0) is the image's bottom-left).
+        const std::vector<float> vertices = {
+            //  x     y     s     t
+            0.0f, 0.0f, 0.0f, 1.0f, // top-left
+            1.0f, 0.0f, 1.0f, 1.0f, // top-right
+            0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+            1.0f, 1.0f, 1.0f, 0.0f, // bottom-right
+        };
+        return Mesh(vertices, {2, 2}, GL_TRIANGLE_STRIP);
+    }
+
     void Mesh::draw() const
     {
         glBindVertexArray(m_vao);

@@ -1,4 +1,4 @@
-#include "Application.hpp"
+#include "app/Application.hpp"
 
 #include <cstdio>
 
@@ -45,7 +45,9 @@ namespace nesmart::app
         auto* self = static_cast<Application*>(glfwGetWindowUserPointer(window));
 
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        {
             self->m_window.close();
+        }
     }
 
 } // namespace nesmart::app

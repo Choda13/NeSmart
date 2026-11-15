@@ -78,6 +78,18 @@
     <ClCompile Include="src\simulation\Simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\ResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\SpriteRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\Sprite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -296,6 +308,18 @@
     <ClInclude Include="external\freetype\include\ft2build.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\ResourceManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\SpriteRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\TextRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\Sprite.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\images\background.png">
@@ -305,6 +329,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="assets\images\bus.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\images\doors_closed.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\images\doors_opened.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

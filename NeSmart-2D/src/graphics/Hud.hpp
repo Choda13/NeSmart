@@ -1,0 +1,33 @@
+#pragma once
+
+#include "graphics/Camera.hpp"
+#include "graphics/ResourceManager.hpp"
+#include "graphics/Sprite.hpp"
+#include "graphics/SpriteRenderer.hpp"
+#include "graphics/TextRenderer.hpp"
+#include "simulation/Simulation.hpp"
+
+namespace nesmart::graphics
+{
+    // Draws the screen-space overlay (units are screen pixels). The doors icon (top-left) and the passengers card (top-right).
+    // The simulation, resources, camera and renderers must outlive it. Needs a current GL context.
+    class Hud
+    {
+    public:
+        Hud(ResourceManager& resources, const Camera& camera, SpriteRenderer& spriteRenderer,
+            TextRenderer& textRenderer, const simulation::Simulation& simulation);
+
+        void draw();
+
+    private:
+        const simulation::Simulation& m_simulation;
+        const Camera& m_camera;
+        SpriteRenderer& m_spriteRenderer;
+        TextRenderer& m_textRenderer; // not used yet; for the passenger and fine counters
+
+        Sprite m_doorsClosed;
+        Sprite m_doorsOpened;
+        Sprite m_passengersCard; // people icon baked into the image; the count is drawn on top as text
+    };
+
+} // namespace nesmart::graphics

@@ -36,11 +36,14 @@ app  ──►  graphics  ──►  simulation
 | `Mesh` | graphics | A shape on the GPU: one VAO and one VBO, uploaded once. Knows its own primitive mode. |
 | `Font` | graphics | A glyph atlas built with FreeType: one GL texture plus per-glyph metrics and `width(text)`. |
 | `Camera` | graphics | Computes the world-to-screen projection matrix from the screen size. Pure math. |
-| `Renderer` | graphics | The only class that draws. Owns all shaders, textures, meshes, the font and the camera, and decides the draw order. |
+| `ResourceManager` | graphics | Loads every shader, texture and font once on construction; the rest of the code only looks them up by name. |
+| `Scene` | graphics | Draws the world (background, route, stations with labels, bus) with `Camera::projection()`. |
+| `Hud` | graphics | Draws the screen-space overlay (doors icon) with `Camera::screenProjection()`. |
+| `Renderer` | graphics | Thin owner of `ResourceManager`, the shared `SpriteRenderer` and `TextRenderer`, `Scene` and `Hud`; receives the `Camera`. Sets the GL state and draws one frame: clear, `Scene`, `Hud`. |
 | `Window` | app | Full-screen GLFW window, GL context, GLEW. Exposes its pixel size. |
 | `Timer` | app | Small clock helpers used by `FrameLimiter`. |
 | `FrameLimiter` | app | Holds the loop to 75 FPS and provides `dt`. |
-| `Application` | app | Main loop and input callbacks. Owns `Window`, `FrameLimiter`, `Simulation` and `Renderer`. |
+| `Application` | app | Main loop and input callbacks. Owns `Window`, `FrameLimiter`, `Simulation`, `Camera` and `Renderer`. |
 
 GL resources (`Shader`, `Texture`, `Mesh`, `Font`) are RAII: they release their GL objects in the destructor and cannot
 be copied. `Camera`, `World.hpp` and everything in `simulation` make no GL calls.
@@ -55,12 +58,12 @@ main()
      ├─ Simulation        declared before Renderer: the renderer builds the route mesh from its Route
      │   ├─ Route
      │   └─ Bus
-     └─ Renderer          needs the GL context, so it is declared after Window
-         ├─ Shader x3     sprite, solid, text (assets/shaders)
-         ├─ Camera        projection from screen size + World.hpp
-         ├─ Mesh x2       unit quad, route ribbon
-         ├─ Texture x3    background, circle, bus (assets/images)
-         └─ Font          Roboto Regular (assets/fonts)
+     ├─ Camera            projection from screen size + World.hpp; shared with the input handling (click -> world)
+     └─ Renderer          needs the GL context, so it is declared after Window; gets the Camera and Simulation
+         ├─ ResourceManager   shaders sprite, solid, text; textures background, circle, bus, doors_*; font Roboto
+         ├─ SpriteRenderer, TextRenderer   shared by Scene and Hud
+         ├─ Scene             route ribbon mesh, station and bus sprites
+         └─ Hud               door sprites
 ```
 
 - Members are constructed in declaration order and destroyed in reverse. Because `m_window` is declared before
@@ -77,21 +80,25 @@ main()
 while (!window.shouldClose())
     dt = limiter.delta()
     simulation.update(dt)
-    renderer.draw(simulation)
+    renderer.draw()
     window.swapBuffers()
     window.pollEvents()      // key callback: Escape closes the window
     limiter.tick()           // sleeps to hold 75 FPS (VSync is off)
 ```
 
-`Renderer::draw(const Simulation&)`, in this order:
+`Renderer::draw()` clears the screen, then calls `Scene::draw` and `Hud::draw`. `Scene` and `Hud` get the `Simulation` in
+their constructors and read it every frame, so `draw()` takes no arguments.
 
-1. Clear the screen.
-2. `drawBackground()`: sprite shader, unit quad scaled to the world size.
-3. `drawRoute()`: solid shader, the route ribbon mesh.
-4. `drawStations()`: a circle sprite per station, then its number as text.
-5. `drawBus(bus)`: sprite shader, positioned, rotated and mirrored from the bus state.
+`Scene::draw`, in this order:
 
-Each draw function selects its shader, sets `uProjection`, binds its texture and builds its own `uModel`. Blending is
+1. Background: sprite shader, unit quad scaled to the world size.
+2. Route: solid shader, the route ribbon mesh.
+3. Stations: a circle sprite per station, then its number as text.
+4. Bus: sprite shader, positioned, rotated and mirrored from the bus state.
+
+`Hud::draw` starts with the screen projection and draws the doors icon (closed while the bus moves, open while stopped).
+
+Each draw step selects its shader, sets `uProjection`, binds its texture and builds its own `uModel`. Blending is
 enabled once in the constructor so transparent areas of sprites and glyph edges work.
 
 ## 5. Coordinate system

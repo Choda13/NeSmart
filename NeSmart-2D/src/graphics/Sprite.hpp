@@ -20,4 +20,7 @@ namespace nesmart::graphics
         glm::mat4 model() const;
     };
 
+    // Builds a sprite of the given width; the height follows the texture's aspect ratio.
+    Sprite makeSprite(const Texture& texture, float width, glm::vec2 position, glm::vec2 origin);
+
 } // namespace nesmart::graphics

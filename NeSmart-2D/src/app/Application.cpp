@@ -8,10 +8,12 @@ namespace nesmart::app
 {
 
     Application::Application()
-        : m_window("NeSmart"), m_limiter(75.0), m_renderer(m_window.width(), m_window.height(), m_simulation.route())
+        : m_window("NeSmart"), m_limiter(75.0), m_camera(m_window.width(), m_window.height()),
+          m_renderer(m_camera, m_simulation)
     {
         glfwSetWindowUserPointer(m_window.handle(), this);
         glfwSetKeyCallback(m_window.handle(), onKey);
+        glfwSetMouseButtonCallback(m_window.handle(), onMouseButton);
     }
 
     int Application::run()
@@ -22,16 +24,8 @@ namespace nesmart::app
         while (!m_window.shouldClose())
         {
             const double dt = m_limiter.delta();
-
-            sinceFpsLog += dt;
-            if (sinceFpsLog >= FPS_LOG_INTERVAL)
-            {
-                std::printf("FPS: %.1f\n", m_limiter.fps());
-                sinceFpsLog = 0.0;
-            }
-
             m_simulation.update(static_cast<float>(dt));
-            m_renderer.draw(m_simulation);
+            m_renderer.draw();
 
             m_window.swapBuffers();
             m_window.pollEvents();
@@ -47,6 +41,26 @@ namespace nesmart::app
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         {
             self->m_window.close();
+        }
+    }
+
+    // Left click: a passenger boards; right click: a passenger leaves. The simulation ignores both while the bus is
+    // driving or when the count is at its limit, and the click position does not matter.
+    void Application::onMouseButton(GLFWwindow* window, int button, int action, int mods)
+    {
+        auto* self = static_cast<Application*>(glfwGetWindowUserPointer(window));
+
+        if (action != GLFW_PRESS)
+        {
+            return;
+        }
+        if (button == GLFW_MOUSE_BUTTON_LEFT)
+        {
+            self->m_simulation.addPassenger();
+        }
+        else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            self->m_simulation.removePassenger();
         }
     }
 

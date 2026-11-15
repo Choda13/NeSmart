@@ -41,4 +41,28 @@ namespace nesmart::graphics
         }
     }
 
+    void TextRenderer::drawAt(const std::string& text, glm::vec2 topLeft, const glm::vec3& color, float scale)
+    {
+        m_shader.setVec3("uColor", color);
+
+        const float baseline = topLeft.y + m_font.glyph('0').bearing.y * scale;
+        float penX = topLeft.x;
+
+        for (const char c : text)
+        {
+            const Font::Glyph& glyph = m_font.glyph(c);
+
+            const glm::vec2 glyphTopLeft{penX + glyph.bearing.x * scale, baseline - glyph.bearing.y * scale};
+            const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(glyphTopLeft, 0.0f)) *
+                                    glm::scale(glm::mat4(1.0f), glm::vec3(glyph.size * scale, 1.0f));
+
+            m_shader.setMat4("uModel", model);
+            m_shader.setVec2("uUVOffset", glyph.uvOffset);
+            m_shader.setVec2("uUVSize", glyph.uvSize);
+            m_quad.draw();
+
+            penX += glyph.advance * scale;
+        }
+    }
+
 } // namespace nesmart::graphics

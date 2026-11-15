@@ -16,5 +16,9 @@
     <File Path="docs/project-spec.md" />
     <File Path="docs/style-guide.md" />
   </Folder>
+  <Folder Name="/workspace/">
+    <File Path=".workspace/specs/renderer-refactor-spec.md" />
+    <File Path=".workspace/specs/specifcation.md" />
+  </Folder>
   <Project Path="NeSmart-2D/NeSmart-2D.vcxproj" />
 </Solution>

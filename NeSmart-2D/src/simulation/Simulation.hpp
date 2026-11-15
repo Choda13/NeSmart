@@ -17,6 +17,10 @@ namespace nesmart::simulation
         const Route& route() const { return m_route; }
         const Bus& bus() const { return m_bus; }
 
+    
+        bool addPassenger();
+        bool removePassenger();
+
     private:
         Route m_route; // declared before m_bus: the bus reads it in its constructor
         Bus m_bus;

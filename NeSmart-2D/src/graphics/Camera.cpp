@@ -12,6 +12,7 @@ namespace nesmart::graphics
     {
         float width = static_cast<float>(screenWidth);
         float height = static_cast<float>(screenHeight);
+        m_screenSize = {width, height};
 
         // Screen pixels per world unit: the largest scale at which the whole safe area still fits.
         float scale = std::min(width / simulation::SAFE_WIDTH, height / simulation::SAFE_HEIGHT);

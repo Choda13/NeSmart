@@ -171,9 +171,11 @@
     <ClCompile Include="src\app\Window.cpp" />
     <ClCompile Include="src\graphics\Camera.cpp" />
     <ClCompile Include="src\graphics\Font.cpp" />
+    <ClCompile Include="src\graphics\Hud.cpp" />
     <ClCompile Include="src\graphics\Mesh.cpp" />
     <ClCompile Include="src\graphics\Renderer.cpp" />
     <ClCompile Include="src\graphics\ResourceManager.cpp" />
+    <ClCompile Include="src\graphics\Scene.cpp" />
     <ClCompile Include="src\graphics\Shader.cpp" />
     <ClCompile Include="src\graphics\Sprite.cpp" />
     <ClCompile Include="src\graphics\SpriteRenderer.cpp" />
@@ -255,9 +257,11 @@
     <ClInclude Include="src\app\Window.hpp" />
     <ClInclude Include="src\graphics\Camera.hpp" />
     <ClInclude Include="src\graphics\Font.hpp" />
+    <ClInclude Include="src\graphics\Hud.hpp" />
     <ClInclude Include="src\graphics\Mesh.hpp" />
     <ClInclude Include="src\graphics\Renderer.hpp" />
     <ClInclude Include="src\graphics\ResourceManager.hpp" />
+    <ClInclude Include="src\graphics\Scene.hpp" />
     <ClInclude Include="src\graphics\Shader.hpp" />
     <ClInclude Include="src\graphics\Sprite.hpp" />
     <ClInclude Include="src\graphics\SpriteRenderer.hpp" />

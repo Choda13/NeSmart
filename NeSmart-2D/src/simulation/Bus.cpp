@@ -65,4 +65,22 @@ namespace nesmart::simulation
         }
     }
 
+    bool Bus::addPassenger()
+    {
+        if (m_state == State::StoppedAtStation && m_passengerCount < BUS_CAPACITY)
+        {
+            m_passengerCount++;
+            return true;
+        }
+        return false;
+    }
+    bool Bus::removePassenger() {
+        if (m_passengerCount > 0 && m_state == State::StoppedAtStation)
+        {
+            m_passengerCount--;
+            return true;
+        }
+        return false;
+    }
+
 } // namespace nesmart::simulation

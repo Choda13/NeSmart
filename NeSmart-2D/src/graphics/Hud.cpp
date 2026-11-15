@@ -10,26 +10,28 @@ namespace nesmart::graphics
 {
     namespace
     {
-        constexpr float HUD_MARGIN = 16.0f;       // screen pixels
-        constexpr float HUD_DOORS_WIDTH = 128.0f; // screen pixels
-
+        constexpr float HUD_MARGIN = 16.0f;           // screen pixels
         constexpr float HUD_INSPECTOR_WIDTH = 128.0f; // screen pixels
 
-        // The passengers card sits in the top-right corner and the fines card right under it. Both images have the
-        // same size and layout: an icon on the left, and the text starts right of it. The offsets are fractions of the
-        // card size so they follow the card width.
+        // The doors card is in the top-left corner; the passengers card is in the top-right corner and the fines card
+        // right under it. All the card images have the same size and layout: an icon on the left, and the text starts
+        // right of it. Text offsets are in screen pixels, measured from the card's top-left corner (x right, y down).
+        // The cards are 320 px wide and about 99 px tall on screen. Scales multiply the font's 56 px size.
         constexpr float HUD_CARD_WIDTH = 320.0f; // screen pixels
         constexpr float HUD_CARD_GAP = 8.0f;     // screen pixels between the two cards
-        constexpr float CARD_TEXT_X = 0.40f;
-        constexpr float CARD_TEXT_Y = 0.35f;
+        const glm::vec2 CARD_TEXT_OFFSET{128.0f, 35.0f};
         constexpr float CARD_TEXT_SCALE = 0.75f;
         const glm::vec3 HUD_TEXT_COLOR{0.17f, 0.21f, 0.33f};
 
-        // Top-left position of a card's text.
-        glm::vec2 cardTextPosition(const Sprite& card)
-        {
-            return card.position + card.size * glm::vec2(CARD_TEXT_X, CARD_TEXT_Y);
-        }
+        // The doors card has two lines: "Doors", and the state under it, indented a little.
+        const glm::vec2 DOORS_LABEL_OFFSET{160.0f, 20.0f};
+        constexpr float DOORS_LABEL_SCALE = 0.4f;
+        const glm::vec2 DOORS_STATE_OFFSET{160.0f, 45.0f};
+        constexpr float DOORS_STATE_SCALE = 0.5f;
+
+        // Colors are RGB, each component from 0 to 1.
+        const glm::vec3 DOORS_LABEL_COLOR{0.42f, 0.47f, 0.58f}; // muted, so the state stands out
+        const glm::vec3 DOORS_OPENED_COLOR{0.13f, 0.45f, 0.24f};
     } // namespace
 
     Hud::Hud(ResourceManager& resources, const Camera& camera, SpriteRenderer& spriteRenderer,
@@ -38,8 +40,8 @@ namespace nesmart::graphics
     {
         // Both door sprites share the top-left corner; draw() picks one by the bus state.
         const glm::vec2 position{HUD_MARGIN, HUD_MARGIN};
-        m_doorsClosed = makeSprite(resources.texture("doors_closed"), HUD_DOORS_WIDTH, position, {0.0f, 0.0f});
-        m_doorsOpened = makeSprite(resources.texture("doors_opened"), HUD_DOORS_WIDTH, position, {0.0f, 0.0f});
+        m_doorsClosed = makeSprite(resources.texture("doors_closed"), HUD_CARD_WIDTH, position, {0.0f, 0.0f});
+        m_doorsOpened = makeSprite(resources.texture("doors_opened"), HUD_CARD_WIDTH, position, {0.0f, 0.0f});
 
         // Bottom-left corner: the sprite origin is its top-left, so the height is needed for the y position.
         const Texture& inspector = resources.texture("inspection");
@@ -60,7 +62,8 @@ namespace nesmart::graphics
         const simulation::Bus& bus = m_simulation.bus();
 
         m_spriteRenderer.begin(m_camera.screenProjection());
-        m_spriteRenderer.draw(bus.isMoving() ? m_doorsClosed : m_doorsOpened);
+        const Sprite& doorsCard = bus.isMoving() ? m_doorsClosed : m_doorsOpened;
+        m_spriteRenderer.draw(doorsCard);
         m_spriteRenderer.draw(m_passengersCard);
         m_spriteRenderer.draw(m_finesCard);
         if (bus.hasInspector())
@@ -74,8 +77,12 @@ namespace nesmart::graphics
         const std::string fines = std::to_string(bus.finesTotal()); // the card's icon already says "FINE"
 
         m_textRenderer.begin(m_camera.screenProjection());
-        m_textRenderer.drawAt(passengers, cardTextPosition(m_passengersCard), HUD_TEXT_COLOR, CARD_TEXT_SCALE);
-        m_textRenderer.drawAt(fines, cardTextPosition(m_finesCard), HUD_TEXT_COLOR, CARD_TEXT_SCALE);
+        m_textRenderer.drawAt("Doors", doorsCard.position + DOORS_LABEL_OFFSET, DOORS_LABEL_COLOR, DOORS_LABEL_SCALE);
+        m_textRenderer.drawAt(bus.isMoving() ? "Closed" : "Opened", doorsCard.position + DOORS_STATE_OFFSET,
+                              bus.isMoving() ? HUD_TEXT_COLOR : DOORS_OPENED_COLOR, DOORS_STATE_SCALE);
+        m_textRenderer.drawAt(passengers, m_passengersCard.position + CARD_TEXT_OFFSET, HUD_TEXT_COLOR,
+                              CARD_TEXT_SCALE);
+        m_textRenderer.drawAt(fines, m_finesCard.position + CARD_TEXT_OFFSET, HUD_TEXT_COLOR, CARD_TEXT_SCALE);
     }
 
 } // namespace nesmart::graphics

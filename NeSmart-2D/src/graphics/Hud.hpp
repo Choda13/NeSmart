@@ -23,7 +23,7 @@ namespace nesmart::graphics
         const simulation::Simulation& m_simulation;
         const Camera& m_camera;
         SpriteRenderer& m_spriteRenderer;
-        TextRenderer& m_textRenderer; // not used yet; for the passenger and fine counters
+        TextRenderer& m_textRenderer; // expected to use the bold font
 
         Sprite m_doorsClosed;
         Sprite m_doorsOpened;

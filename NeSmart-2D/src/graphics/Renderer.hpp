@@ -27,7 +27,8 @@ namespace nesmart::graphics
         // m_resources comes first so it outlives everything that refers to it.
         ResourceManager m_resources;
         SpriteRenderer m_spriteRenderer;
-        TextRenderer m_textRenderer;
+        TextRenderer m_textRenderer;     // regular font, for the world (station labels)
+        TextRenderer m_boldTextRenderer; // bold font, for the HUD
         Scene m_scene;
         Hud m_hud;
     };

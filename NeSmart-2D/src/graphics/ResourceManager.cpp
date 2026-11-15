@@ -9,6 +9,8 @@ namespace nesmart::graphics
     {
         constexpr const char* FONT_NAME = "roboto";
         constexpr const char* FONT_PATH = "assets/fonts/roboto/Roboto-Regular.ttf";
+        constexpr const char* BOLD_FONT_NAME = "roboto_bold";
+        constexpr const char* BOLD_FONT_PATH = "assets/fonts/roboto/Roboto-Bold.ttf";
         constexpr unsigned int FONT_PIXEL_HEIGHT = 56;
 
         template <typename T>
@@ -51,6 +53,7 @@ namespace nesmart::graphics
         loadTexture("inspection");
 
         loadFont(FONT_NAME, FONT_PATH, FONT_PIXEL_HEIGHT);
+        loadFont(BOLD_FONT_NAME, BOLD_FONT_PATH, FONT_PIXEL_HEIGHT);
     }
 
     Texture& ResourceManager::loadTexture(const std::string& name)

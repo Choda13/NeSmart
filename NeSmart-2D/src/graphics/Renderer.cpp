@@ -7,8 +7,9 @@ namespace nesmart::graphics
     Renderer::Renderer(const Camera& camera, const simulation::Simulation& simulation)
         : m_spriteRenderer(m_resources.shader("sprite")),
           m_textRenderer(m_resources.shader("text"), m_resources.font("roboto")),
+          m_boldTextRenderer(m_resources.shader("text"), m_resources.font("roboto_bold")),
           m_scene(m_resources, camera, m_spriteRenderer, m_textRenderer, simulation),
-          m_hud(m_resources, camera, m_spriteRenderer, m_textRenderer, simulation)
+          m_hud(m_resources, camera, m_spriteRenderer, m_boldTextRenderer, simulation)
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

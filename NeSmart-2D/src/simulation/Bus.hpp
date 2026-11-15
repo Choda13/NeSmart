@@ -24,10 +24,16 @@ namespace nesmart::simulation
         float heading() const { return m_heading; } // radians, y points down, same convention as Route::headingAt
         bool isFacingLeft() const { return m_facingLeft; }
 
+        // Includes the inspector while one is on board, so it can briefly be BUS_CAPACITY + 1.
         unsigned int passengerCount() const { return m_passengerCount; }
+        bool hasInspector() const { return m_hasInspector; }
 
         bool addPassenger();
-        bool removePassenger();
+        bool removePassenger(); // never removes the inspector
+
+        // Only while stopped, and only one inspector at a time. Enters even if the bus is full. The inspector counts as
+        // a passenger and leaves (count - 1) when the bus arrives at the next station.
+        bool addInspector();
 
     private:
         enum class State
@@ -47,6 +53,7 @@ namespace nesmart::simulation
         bool m_facingLeft = false;
 
         unsigned int m_passengerCount = 0;
+        bool m_hasInspector = false;
     };
 
 } // namespace nesmart::simulation

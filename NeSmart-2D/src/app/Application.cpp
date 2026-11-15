@@ -42,6 +42,10 @@ namespace nesmart::app
         {
             self->m_window.close();
         }
+        else if (key == GLFW_KEY_K && action == GLFW_PRESS)
+        {
+            self->m_simulation.addInspector();
+        }
     }
 
     // Left click: a passenger boards; right click: a passenger leaves. The simulation ignores both while the bus is

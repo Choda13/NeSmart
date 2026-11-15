@@ -20,6 +20,7 @@ namespace nesmart::simulation
     
         bool addPassenger();
         bool removePassenger();
+        bool addInspector();
 
     private:
         Route m_route; // declared before m_bus: the bus reads it in its constructor

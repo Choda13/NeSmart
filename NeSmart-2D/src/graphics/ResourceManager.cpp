@@ -47,6 +47,7 @@ namespace nesmart::graphics
         loadTexture("doors_closed");
         loadTexture("doors_opened");
         loadTexture("passengers_hud");
+        loadTexture("inspection");
 
         loadFont(FONT_NAME, FONT_PATH, FONT_PIXEL_HEIGHT);
     }

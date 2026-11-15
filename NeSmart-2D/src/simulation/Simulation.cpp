@@ -14,4 +14,5 @@ namespace nesmart::simulation
 
     bool Simulation::addPassenger() { return m_bus.addPassenger(); }
     bool Simulation::removePassenger() { return m_bus.removePassenger(); }
+    bool Simulation::addInspector() { return m_bus.addInspector(); }
 } // namespace nesmart::simulation

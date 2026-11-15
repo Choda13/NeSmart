@@ -9,7 +9,7 @@
 
 namespace nesmart::graphics
 {
-    // Draws the screen-space overlay (units are screen pixels). The doors icon (top-left) and the passengers card (top-right).
+    // Draws the screen-space overlay (units are screen pixels). The doors icon (top-left), the passengers card (top-right) and the inspector icon (bottom-left, only while an inspector is aboard).
     // The simulation, resources, camera and renderers must outlive it. Needs a current GL context.
     class Hud
     {
@@ -27,6 +27,7 @@ namespace nesmart::graphics
 
         Sprite m_doorsClosed;
         Sprite m_doorsOpened;
+        Sprite m_inspector; // bottom-left, drawn only while an inspector is on the bus
         Sprite m_passengersCard; // people icon baked into the image; the count is drawn on top as text
     };
 

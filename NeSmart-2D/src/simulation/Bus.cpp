@@ -42,6 +42,13 @@ namespace nesmart::simulation
             m_distance = target;
             m_state = State::StoppedAtStation;
             m_stopTimer = STOP_DURATION;
+
+            // The inspector gets off at the first station after boarding, so another one can board right here.
+            if (m_hasInspector)
+            {
+                m_hasInspector = false;
+                m_passengerCount--;
+            }
         }
         else
         {
@@ -75,9 +82,22 @@ namespace nesmart::simulation
         return false;
     }
     bool Bus::removePassenger() {
-        if (m_passengerCount > 0 && m_state == State::StoppedAtStation)
+        // The inspector is counted as a passenger but leaves only on its own, so it is never removed here.
+        const unsigned int inspectorCount = m_hasInspector ? 1 : 0;
+        if (m_passengerCount > inspectorCount && m_state == State::StoppedAtStation)
         {
             m_passengerCount--;
+            return true;
+        }
+        return false;
+    }
+
+    bool Bus::addInspector()
+    {
+        if (m_state == State::StoppedAtStation && !m_hasInspector)
+        {
+            m_hasInspector = true;
+            m_passengerCount++; // no capacity check: the inspector boards even when the bus is full
             return true;
         }
         return false;

@@ -15,6 +15,7 @@ namespace nesmart::graphics
 
         // The passengers card sits in the top-right corner. The text starts right of the icon baked into the image;
         // the offsets are fractions of the card size so they follow the card width.
+        constexpr float HUD_INSPECTOR_WIDTH = 128.0f;  // screen pixels
         constexpr float HUD_PASSENGERS_WIDTH = 320.0f; // screen pixels
         constexpr float PASSENGERS_TEXT_X = 0.40f;
         constexpr float PASSENGERS_TEXT_Y = 0.35f;
@@ -31,6 +32,12 @@ namespace nesmart::graphics
         m_doorsClosed = makeSprite(resources.texture("doors_closed"), HUD_DOORS_WIDTH, position, {0.0f, 0.0f});
         m_doorsOpened = makeSprite(resources.texture("doors_opened"), HUD_DOORS_WIDTH, position, {0.0f, 0.0f});
 
+        // Bottom-left corner: the sprite origin is its top-left, so the height is needed for the y position.
+        const Texture& inspector = resources.texture("inspection");
+        const float inspectorHeight = HUD_INSPECTOR_WIDTH / inspector.aspectRatio();
+        m_inspector = makeSprite(inspector, HUD_INSPECTOR_WIDTH,
+                                 {HUD_MARGIN, m_camera.screenSize().y - HUD_MARGIN - inspectorHeight}, {0.0f, 0.0f});
+
         const glm::vec2 passengersPosition{m_camera.screenSize().x - HUD_MARGIN - HUD_PASSENGERS_WIDTH, HUD_MARGIN};
         m_passengersCard = makeSprite(resources.texture("passengers_hud"), HUD_PASSENGERS_WIDTH, passengersPosition,
                                       {0.0f, 0.0f});
@@ -43,6 +50,10 @@ namespace nesmart::graphics
         m_spriteRenderer.begin(m_camera.screenProjection());
         m_spriteRenderer.draw(bus.isMoving() ? m_doorsClosed : m_doorsOpened);
         m_spriteRenderer.draw(m_passengersCard);
+        if (bus.hasInspector())
+        {
+            m_spriteRenderer.draw(m_inspector);
+        }
 
         // Text goes after the sprites: it uses a different shader, so begin() is called again.
         const std::string passengers =

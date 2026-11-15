@@ -46,6 +46,10 @@ namespace nesmart::simulation
             // The inspector gets off at the first station after boarding, so another one can board right here.
             if (m_hasInspector)
             {
+                // The count still includes the inspector, so count - 1 is the number of other passengers.
+                std::uniform_int_distribution<unsigned int> fines(0, m_passengerCount - 1);
+                m_finesTotal += fines(m_rng);
+
                 m_hasInspector = false;
                 m_passengerCount--;
             }

@@ -28,6 +28,7 @@ namespace nesmart::graphics
         Sprite m_doorsClosed;
         Sprite m_doorsOpened;
         Sprite m_inspector; // bottom-left, drawn only while an inspector is on the bus
+        Sprite m_finesCard; // right under the passengers card
         Sprite m_passengersCard; // people icon baked into the image; the count is drawn on top as text
     };
 

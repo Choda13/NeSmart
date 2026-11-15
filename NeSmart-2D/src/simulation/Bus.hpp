@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <random>
+
 #include <glm/vec2.hpp>
 #include "simulation/Route.hpp"
 
@@ -28,6 +30,10 @@ namespace nesmart::simulation
         unsigned int passengerCount() const { return m_passengerCount; }
         bool hasInspector() const { return m_hasInspector; }
 
+        // Total number of passengers fined so far. Each time the inspector gets off, a random number of the other
+        // passengers (0 to count - 1) is added to it.
+        unsigned int finesTotal() const { return m_finesTotal; }
+
         bool addPassenger();
         bool removePassenger(); // never removes the inspector
 
@@ -54,6 +60,8 @@ namespace nesmart::simulation
 
         unsigned int m_passengerCount = 0;
         bool m_hasInspector = false;
+        unsigned int m_finesTotal = 0;
+        std::mt19937 m_rng{std::random_device{}()};
     };
 
 } // namespace nesmart::simulation

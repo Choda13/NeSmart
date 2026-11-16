@@ -8,7 +8,7 @@ namespace nesmart::simulation
         : m_distance(route.stationDistance(0))
     {
         cachePose(route);
-        m_heading = route.headingAt(m_distance); // no threshold on the first frame
+        m_heading = route.headingAt(m_distance);
         m_facingLeft = std::cos(m_heading) < 0.0f;
     }
 
@@ -19,7 +19,7 @@ namespace nesmart::simulation
             m_stopTimer -= dt;
             if (m_stopTimer <= 0.0f)
             {
-                m_state = State::Driving; // starts moving next frame
+                m_state = State::Driving;
                 m_nextStation = (m_nextStation + 1) % Route::STATION_COUNT;
             }
             return;
@@ -56,7 +56,6 @@ namespace nesmart::simulation
         }
         else
         {
-            // fmod keeps the overshoot past the end of the loop, so the speed stays constant across the seam.
             m_distance = std::fmod(m_distance + step, length);
         }
         cachePose(route);
@@ -86,7 +85,6 @@ namespace nesmart::simulation
         return false;
     }
     bool Bus::removePassenger() {
-        // The inspector is counted as a passenger but leaves only on its own, so it is never removed here.
         const unsigned int inspectorCount = m_hasInspector ? 1 : 0;
         if (m_passengerCount > inspectorCount && m_state == State::StoppedAtStation)
         {
@@ -101,7 +99,7 @@ namespace nesmart::simulation
         if (m_state == State::StoppedAtStation && !m_hasInspector)
         {
             m_hasInspector = true;
-            m_passengerCount++; // no capacity check: the inspector boards even when the bus is full
+            m_passengerCount++;
             return true;
         }
         return false;

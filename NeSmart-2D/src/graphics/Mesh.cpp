@@ -8,7 +8,7 @@ namespace nesmart::graphics
 {
     Mesh::Mesh(const std::vector<float>& vertices, const std::vector<int>& attributeSizes, GLenum mode) : m_mode(mode)
     {
-        // Validate before touching GL, so a failed constructor leaves nothing to release.
+        // Validation
         const int floatsPerVertex = std::accumulate(attributeSizes.begin(), attributeSizes.end(), 0);
         if (floatsPerVertex <= 0 || vertices.empty() ||
             vertices.size() % static_cast<std::size_t>(floatsPerVertex) != 0)

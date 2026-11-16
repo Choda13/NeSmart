@@ -33,13 +33,10 @@ namespace nesmart::graphics
 
         void bind(unsigned int unit = 0) const;
 
-        // Printable ASCII plus the letters č ć š đ ž and their capitals. Anything else falls back to '?'.
         const Glyph& glyph(char32_t c) const;
 
-        // Sum of the glyph advances: the pen distance the string occupies. The text is UTF-8.
         float width(const std::string& text) const;
 
-        // Converts UTF-8 to code points. Invalid bytes become '?'.
         static std::u32string decode(const std::string& text);
 
     private:

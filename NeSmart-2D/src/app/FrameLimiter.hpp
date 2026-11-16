@@ -1,5 +1,6 @@
 #pragma once
-#include "Timer.hpp"
+
+#include <chrono>
 
 namespace nesmart::app
 {
@@ -7,11 +8,10 @@ namespace nesmart::app
     class FrameLimiter
     {
     public:
-        using Clock = Timer::Clock;
+        using Clock = std::chrono::steady_clock;
 
-        // targetFps <= 0 means unlimited
         explicit FrameLimiter(double targetFps = 60.0, double maxDelta = 0.25);
-        ~FrameLimiter(); // restores the system timer resolution
+        ~FrameLimiter();
 
         FrameLimiter(const FrameLimiter&) = delete;
         FrameLimiter& operator=(const FrameLimiter&) = delete;

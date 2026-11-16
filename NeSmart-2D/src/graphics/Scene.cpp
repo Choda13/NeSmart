@@ -59,14 +59,12 @@ namespace nesmart::graphics
         m_background.texture = &resources.texture("background");
         m_background.size = {simulation::WORLD_WIDTH, simulation::WORLD_HEIGHT};
 
-        // The origin is the sprite's centre, so the circle is centred on the station.
         const Texture& circle = resources.texture("circle");
         for (std::size_t i = 0; i < m_stations.size(); ++i)
         {
             m_stations[i] = makeSprite(circle, STATION_DIAMETER, route.stationPosition(i), {0.5f, 0.5f});
         }
 
-        // Position, rotation and flips are set every frame in draw(). The origin is the centre, so the bus pivots there.
         m_bus = makeSprite(resources.texture("bus"), BUS_WIDTH, {0.0f, 0.0f}, {0.5f, 0.5f});
     }
 

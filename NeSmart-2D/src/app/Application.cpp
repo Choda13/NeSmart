@@ -5,8 +5,8 @@
 #include <stdexcept>
 #include <string>
 
-#include <GLFW/glfw3.h> // after Application.hpp: GLEW's header must come before any other GL header
-#include <stb_image.h>  // the implementation is compiled in graphics/Texture.cpp
+#include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 namespace nesmart::app
 {
@@ -19,9 +19,6 @@ namespace nesmart::app
         glfwSetKeyCallback(m_window.handle(), onKey);
         glfwSetMouseButtonCallback(m_window.handle(), onMouseButton);
 
-        // Custom cursor. No vertical flip: GLFW wants the top row first, as stb delivers it. The hotspot is the
-        // top-left pixel. GLFW destroys the cursor itself in glfwTerminate, so it is not kept.
-        // The flip flag is global and graphics/Texture.cpp turns it on, so it is switched off explicitly here.
         stbi_set_flip_vertically_on_load(false);
         const char* cursorPath = "assets/images/cursor.png";
         int width = 0;
@@ -44,7 +41,6 @@ namespace nesmart::app
 
     int Application::run()
     {
-        constexpr double FPS_LOG_INTERVAL = 1.0; // seconds
         double sinceFpsLog = 0.0;
 
         while (!m_window.shouldClose())
@@ -74,8 +70,6 @@ namespace nesmart::app
         }
     }
 
-    // Left click: a passenger boards; right click: a passenger leaves. The simulation ignores both while the bus is
-    // driving or when the count is at its limit, and the click position does not matter.
     void Application::onMouseButton(GLFWwindow* window, int button, int action, int mods)
     {
         auto* self = static_cast<Application*>(glfwGetWindowUserPointer(window));

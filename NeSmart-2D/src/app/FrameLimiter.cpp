@@ -14,9 +14,8 @@ namespace nesmart::app
 
     namespace
     {
-        // Windows' default timer tick is ~15.6 ms, which would make sleeps overshoot and cap the loop near 64 FPS.
         constexpr UINT TIMER_RESOLUTION_MS = 1;
-    } // namespace
+    }
 
     FrameLimiter::FrameLimiter(double targetFps, double maxDelta)
         : m_maxDelta(maxDelta), m_lastTick(Clock::now()), m_fpsWindowStart(m_lastTick)
@@ -49,8 +48,6 @@ namespace nesmart::app
         return m_delta;
     }
 
-    // sleep_for/sleep_until are imprecise (often 1-15 ms of overshoot depending on the OS),
-    // so sleep for most of the wait and spin for the final stretch.
     void FrameLimiter::waitUntil(Clock::time_point deadline)
     {
         constexpr auto spinMargin = std::chrono::milliseconds(2);

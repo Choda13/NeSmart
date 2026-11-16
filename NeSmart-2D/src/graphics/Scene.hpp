@@ -14,10 +14,6 @@
 
 namespace nesmart::graphics
 {
-    // Draws the world: background, route, stations with their labels and the bus, in that order.
-    // Builds the static sprites and the route's mesh once from the simulation's route, and reads the bus state from
-    // it every frame.
-    // The simulation, resources, camera and renderers must outlive it. Needs a current GL context.
     class Scene
     {
     public:

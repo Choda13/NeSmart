@@ -12,7 +12,6 @@ namespace nesmart::graphics
 {
     Texture::Texture(const std::string& path)
     {
-        // Flip rows so UV (0, 0) is the bottom-left of the image, as OpenGL expects.
         stbi_set_flip_vertically_on_load(true);
 
         int channels = 0;

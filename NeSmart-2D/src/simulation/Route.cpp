@@ -135,7 +135,6 @@ namespace nesmart::simulation
             wrapped += total;
         }
 
-        // The first cumulative entry greater than the distance, minus one, is the segment that contains it.
         const auto next = std::upper_bound(m_cumulative.begin(), m_cumulative.end(), wrapped);
         const std::size_t index =
             std::min(static_cast<std::size_t>(next - m_cumulative.begin()) - 1, m_points.size() - 1);

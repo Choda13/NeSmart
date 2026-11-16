@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{eac78fa5-6d82-4604-ba13-453a9145921e}</ProjectGuid>
+    <ProjectGuid>{02A6BBF3-B98A-B128-8C52-AFFC29D308C2}</ProjectGuid>
     <RootNamespace>NeSmart2D</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -169,7 +169,6 @@
   <ItemGroup>
     <ClCompile Include="src\app\Application.cpp" />
     <ClCompile Include="src\app\FrameLimiter.cpp" />
-    <ClCompile Include="src\app\Timer.cpp" />
     <ClCompile Include="src\app\Window.cpp" />
     <ClCompile Include="src\graphics\Camera.cpp" />
     <ClCompile Include="src\graphics\Font.cpp" />
@@ -255,7 +254,6 @@
     <ClInclude Include="external\freetype\include\ft2build.h" />
     <ClInclude Include="src\app\Application.hpp" />
     <ClInclude Include="src\app\FrameLimiter.hpp" />
-    <ClInclude Include="src\app\Timer.hpp" />
     <ClInclude Include="src\app\Window.hpp" />
     <ClInclude Include="src\graphics\Camera.hpp" />
     <ClInclude Include="src\graphics\Font.hpp" />

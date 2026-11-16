@@ -5,8 +5,6 @@
 
 namespace nesmart::simulation
 {
-    // Owns all simulation state and advances it. Pure logic: no OpenGL or GLFW.
-    // Throws std::runtime_error if the route cannot be built.
     class Simulation
     {
     public:
@@ -23,7 +21,7 @@ namespace nesmart::simulation
         bool addInspector();
 
     private:
-        Route m_route; // declared before m_bus: the bus reads it in its constructor
+        Route m_route;
         Bus m_bus;
     };
 

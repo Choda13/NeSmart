@@ -5,22 +5,12 @@
 
 namespace nesmart::graphics
 {
-    // A shape stored on the GPU: one VAO and one VBO holding interleaved float vertices.
-    // The data is uploaded once in the constructor and never changes. Where and how the shape appears on
-    // screen is decided at draw time by shader uniforms and textures, not by the mesh.
-    // Throws std::runtime_error if the vertex data does not match the attribute layout.
     class Mesh
     {
     public:
-        // attributeSizes lists the float count of each vertex attribute, in shader location order.
-        // Example: {2, 2} is a position (x, y) at location 0 followed by a texture coordinate (s, t) at location 1.
-        // mode is the GL primitive type the vertices are ordered for, for example GL_TRIANGLES,
-        // GL_TRIANGLE_STRIP or GL_LINE_LOOP.
         Mesh(const std::vector<float>& vertices, const std::vector<int>& attributeSizes, GLenum mode);
         ~Mesh();
 
-        // Square from (0, 0) to (1, 1) in y-down space with texture coordinates (layout {2, 2}), drawn as a
-        // triangle strip. Scale and move it with a model matrix to draw sprites and glyphs.
         static Mesh unitQuad();
 
         Mesh(const Mesh&) = delete;

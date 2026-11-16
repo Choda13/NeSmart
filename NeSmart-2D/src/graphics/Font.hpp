@@ -33,16 +33,23 @@ namespace nesmart::graphics
 
         void bind(unsigned int unit = 0) const;
 
-        // Characters outside printable ASCII fall back to '?'.
-        const Glyph& glyph(char c) const;
+        // Printable ASCII plus the letters č ć š đ ž and their capitals. Anything else falls back to '?'.
+        const Glyph& glyph(char32_t c) const;
 
-        // Sum of the glyph advances: the pen distance the string occupies.
+        // Sum of the glyph advances: the pen distance the string occupies. The text is UTF-8.
         float width(const std::string& text) const;
+
+        // Converts UTF-8 to code points. Invalid bytes become '?'.
+        static std::u32string decode(const std::string& text);
 
     private:
         static constexpr int FIRST_CHAR = 32;
         static constexpr int LAST_CHAR = 126;
-        static constexpr std::size_t GLYPH_COUNT = LAST_CHAR - FIRST_CHAR + 1;
+        static constexpr std::size_t ASCII_COUNT = LAST_CHAR - FIRST_CHAR + 1;
+        // Code points of Č č Ć ć Š š Đ đ Ž ž (written as numbers so the source file encoding does not matter).
+        static constexpr std::array<char32_t, 10> EXTRA_CHARS = {0x010C, 0x010D, 0x0106, 0x0107, 0x0160,
+                                                                  0x0161, 0x0110, 0x0111, 0x017D, 0x017E};
+        static constexpr std::size_t GLYPH_COUNT = ASCII_COUNT + EXTRA_CHARS.size();
 
         GLuint m_id = 0;
         std::array<Glyph, GLYPH_COUNT> m_glyphs{};

@@ -32,6 +32,10 @@ namespace nesmart::graphics
         // Colors are RGB, each component from 0 to 1.
         const glm::vec3 DOORS_LABEL_COLOR{0.42f, 0.47f, 0.58f}; // muted, so the state stands out
         const glm::vec3 DOORS_OPENED_COLOR{0.13f, 0.45f, 0.24f};
+
+        // The bottom-right corner is the only one left free: the author credit goes there.
+        const std::string AUTHOR_TEXT = "Danilo Kovačević RA136/2022";
+        constexpr float AUTHOR_SCALE = 0.4f;
     } // namespace
 
     Hud::Hud(ResourceManager& resources, const Camera& camera, SpriteRenderer& spriteRenderer,
@@ -83,6 +87,11 @@ namespace nesmart::graphics
         m_textRenderer.drawAt(passengers, m_passengersCard.position + CARD_TEXT_OFFSET, HUD_TEXT_COLOR,
                               CARD_TEXT_SCALE);
         m_textRenderer.drawAt(fines, m_finesCard.position + CARD_TEXT_OFFSET, HUD_TEXT_COLOR, CARD_TEXT_SCALE);
+
+        const glm::vec2 authorPosition{
+            m_camera.screenSize().x - HUD_MARGIN - m_textRenderer.width(AUTHOR_TEXT, AUTHOR_SCALE),
+            m_camera.screenSize().y - HUD_MARGIN - m_textRenderer.height(AUTHOR_SCALE)};
+        m_textRenderer.drawAt(AUTHOR_TEXT, authorPosition, HUD_TEXT_COLOR, AUTHOR_SCALE);
     }
 
 } // namespace nesmart::graphics

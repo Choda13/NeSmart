@@ -45,7 +45,9 @@ namespace nesmart::graphics
 
         for (std::size_t i = 0; i < GLYPH_COUNT; ++i)
         {
-            if (FT_Load_Char(face.get(), FIRST_CHAR + static_cast<FT_ULong>(i), FT_LOAD_RENDER) != 0)
+            const char32_t codePoint =
+                i < ASCII_COUNT ? static_cast<char32_t>(FIRST_CHAR + i) : EXTRA_CHARS[i - ASCII_COUNT];
+            if (FT_Load_Char(face.get(), codePoint, FT_LOAD_RENDER) != 0)
             {
                 throw std::runtime_error("Failed to render glyph from font: " + path);
             }
@@ -111,24 +113,70 @@ namespace nesmart::graphics
         glBindTexture(GL_TEXTURE_2D, m_id);
     }
 
-    const Font::Glyph& Font::glyph(char c) const
+    const Font::Glyph& Font::glyph(char32_t c) const
     {
-        const int code = static_cast<unsigned char>(c);
-        if (code < FIRST_CHAR || code > LAST_CHAR)
+        if (c >= FIRST_CHAR && c <= LAST_CHAR)
         {
-            return m_glyphs['?' - FIRST_CHAR];
+            return m_glyphs[c - FIRST_CHAR];
         }
-        return m_glyphs[static_cast<std::size_t>(code - FIRST_CHAR)];
+        for (std::size_t i = 0; i < EXTRA_CHARS.size(); ++i)
+        {
+            if (EXTRA_CHARS[i] == c)
+            {
+                return m_glyphs[ASCII_COUNT + i];
+            }
+        }
+        return m_glyphs['?' - FIRST_CHAR];
     }
 
     float Font::width(const std::string& text) const
     {
         float total = 0.0f;
-        for (const char c : text)
+        for (const char32_t c : decode(text))
         {
             total += glyph(c).advance;
         }
         return total;
+    }
+
+    std::u32string Font::decode(const std::string& text)
+    {
+        std::u32string result;
+        std::size_t i = 0;
+        while (i < text.size())
+        {
+            const unsigned char lead = static_cast<unsigned char>(text[i]);
+            std::size_t length = 1;
+            char32_t codePoint = lead;
+            if (lead >= 0xF0)
+            {
+                length = 4;
+                codePoint = lead & 0x07;
+            }
+            else if (lead >= 0xE0)
+            {
+                length = 3;
+                codePoint = lead & 0x0F;
+            }
+            else if (lead >= 0xC0)
+            {
+                length = 2;
+                codePoint = lead & 0x1F;
+            }
+
+            if (i + length > text.size())
+            {
+                result.push_back(U'?');
+                break;
+            }
+            for (std::size_t k = 1; k < length; ++k)
+            {
+                codePoint = (codePoint << 6) | (static_cast<unsigned char>(text[i + k]) & 0x3F);
+            }
+            result.push_back(lead >= 0x80 && length == 1 ? U'?' : codePoint); // a stray continuation byte
+            i += length;
+        }
+        return result;
     }
 
 } // namespace nesmart::graphics

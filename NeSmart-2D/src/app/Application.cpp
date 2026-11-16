@@ -1,8 +1,12 @@
 #include "app/Application.hpp"
 
 #include <cstdio>
+#include <memory>
+#include <stdexcept>
+#include <string>
 
 #include <GLFW/glfw3.h> // after Application.hpp: GLEW's header must come before any other GL header
+#include <stb_image.h>  // the implementation is compiled in graphics/Texture.cpp
 
 namespace nesmart::app
 {
@@ -14,6 +18,28 @@ namespace nesmart::app
         glfwSetWindowUserPointer(m_window.handle(), this);
         glfwSetKeyCallback(m_window.handle(), onKey);
         glfwSetMouseButtonCallback(m_window.handle(), onMouseButton);
+
+        // Custom cursor. No vertical flip: GLFW wants the top row first, as stb delivers it. The hotspot is the
+        // top-left pixel. GLFW destroys the cursor itself in glfwTerminate, so it is not kept.
+        // The flip flag is global and graphics/Texture.cpp turns it on, so it is switched off explicitly here.
+        stbi_set_flip_vertically_on_load(false);
+        const char* cursorPath = "assets/images/cursor.png";
+        int width = 0;
+        int height = 0;
+        int channels = 0;
+        std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels(stbi_load(cursorPath, &width, &height, &channels, 4),
+                                                                    &stbi_image_free);
+        if (!pixels)
+        {
+            throw std::runtime_error(std::string("Failed to load cursor image: ") + cursorPath);
+        }
+        const GLFWimage image{width, height, pixels.get()};
+        GLFWcursor* cursor = glfwCreateCursor(&image, 0, 0);
+        if (cursor == nullptr)
+        {
+            throw std::runtime_error("Failed to create cursor");
+        }
+        glfwSetCursor(m_window.handle(), cursor);
     }
 
     int Application::run()

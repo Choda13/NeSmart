@@ -16,6 +16,16 @@ namespace nesmart::graphics
         m_font.bind(0);
     }
 
+    float TextRenderer::width(const std::string& text, float scale) const
+    {
+        return m_font.width(text) * scale;
+    }
+
+    float TextRenderer::height(float scale) const
+    {
+        return m_font.glyph('0').bearing.y * scale;
+    }
+
     void TextRenderer::drawCentered(const std::string& text, glm::vec2 center, const glm::vec3& color)
     {
         m_shader.setVec3("uColor", color);
@@ -24,7 +34,7 @@ namespace nesmart::graphics
         const float baseline = center.y + m_font.glyph('0').bearing.y * 0.5f;
         float penX = center.x - m_font.width(text) * 0.5f;
 
-        for (const char c : text)
+        for (const char32_t c : Font::decode(text))
         {
             const Font::Glyph& glyph = m_font.glyph(c);
 
@@ -48,7 +58,7 @@ namespace nesmart::graphics
         const float baseline = topLeft.y + m_font.glyph('0').bearing.y * scale;
         float penX = topLeft.x;
 
-        for (const char c : text)
+        for (const char32_t c : Font::decode(text))
         {
             const Font::Glyph& glyph = m_font.glyph(c);
 
